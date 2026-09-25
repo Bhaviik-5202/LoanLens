@@ -1,4 +1,4 @@
-<%- include('partials/header', { title: 'Model Comparison Matrix — LoanLens', crumb: '<b>Workspace</b> / Model Comparison', currentPath: '/model/comparison' }) %>
+<%- include('../partials/header', { title: 'Model Comparison Matrix — LoanLens', crumb: '<b>Workspace</b> / Model Comparison', currentPath: '/model/comparison' }) %>
 
 <div style="max-width: 1080px; margin: 0 auto; padding-bottom: 60px;">
 
@@ -170,13 +170,13 @@
   <h2 style="font-size:18px; font-weight:700; margin:0 0 16px;">Model Inspection Cards</h2>
   <div class="model-grid">
     <% models.forEach(function(model) { %>
-      <%- include('components/model_card', { model: model }) %>
+      <%- include('../components/model_card', { model: model }) %>
     <% }); %>
   </div>
 
 </div>
 
-<%- include('partials/footer', {
+<%- include('../partials/footer', {
   extraScripts: `
 <script>
 document.addEventListener('DOMContentLoaded', function() {

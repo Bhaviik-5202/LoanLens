@@ -192,6 +192,9 @@ def health_check():
 # ─────────────────────────────────────────────────────────────────────────────
 
 def normalize_payload_keys(payload: dict) -> dict:
+    source = payload
+    if "features" in payload and isinstance(payload["features"], dict):
+        source = {**payload["features"], **payload}
     norm_map = {
         "age": "Age", "income": "Income", "loanamount": "LoanAmount",
         "creditscore": "CreditScore", "monthsemployed": "MonthsEmployed",
@@ -202,7 +205,7 @@ def normalize_payload_keys(payload: dict) -> dict:
         "loanpurpose": "LoanPurpose", "hascosigner": "HasCoSigner", "name": "Name"
     }
     normalized = {}
-    for k, v in payload.items():
+    for k, v in source.items():
         clean_k = k.lower().replace("_", "")
         if clean_k in norm_map:
             normalized[norm_map[clean_k]] = v

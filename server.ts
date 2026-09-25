@@ -82,6 +82,7 @@ const app = express();
 // View Engine & Static Assets
 app.set('view engine', 'ejs');
 app.set('views', path.join(projectRoot, 'views'));
+app.use(express.static(path.join(projectRoot, 'public')));
 app.use('/static', express.static(path.join(projectRoot, 'public')));
 
 // Request Body Parsing

@@ -1,4 +1,4 @@
-<%- include('partials/header', { title: 'Feature Importance Analysis — LoanLens', crumb: '<b>ML Analysis</b> / Feature Importance (Week 5–6)', currentPath: '/feature/importance' }) %>
+<%- include('../partials/header', { title: 'Feature Importance Analysis — LoanLens', crumb: '<b>ML Analysis</b> / Feature Importance (Week 5–6)', currentPath: '/feature/importance' }) %>
 
 <% const importance = (metrics && metrics.feature_importances) ? metrics.feature_importances : []; %>
 
@@ -146,7 +146,7 @@
   </div>
 </div>
 
-<%- include('partials/footer', {
+<%- include('../partials/footer', {
   extraScripts: `
 <script>
 document.addEventListener("DOMContentLoaded", function() {

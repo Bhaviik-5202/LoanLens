@@ -1,4 +1,4 @@
-<%- include('partials/header', { title: 'Prediction History — LoanLens', crumb: '<b>Prediction History</b>', currentPath: '/predictions' }) %>
+<%- include('../partials/header', { title: 'Prediction History — LoanLens', crumb: '<b>Prediction History</b>', currentPath: '/predictions' }) %>
 
 <div class="page-title-row">
   <div>
@@ -41,7 +41,7 @@
   <% } %>
 </div>
 
-<%- include('partials/footer', {
+<%- include('../partials/footer', {
   extraScripts: apps && apps.length > 0 ? `
     <script>window.APPLICATIONS = ${JSON.stringify(apps)};</script>
     <script src="/static/js/history.js"></script>

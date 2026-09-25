@@ -1,4 +1,4 @@
-<%- include('partials/header', { title: 'Dataset Explorer & EDA — LoanLens', crumb: '<b>Data</b> / Dataset Explorer (Weeks 1–2)', currentPath: '/dataset/explorer' }) %>
+<%- include('../partials/header', { title: 'Dataset Explorer & EDA — LoanLens', crumb: '<b>Data</b> / Dataset Explorer (Weeks 1–2)', currentPath: '/dataset/explorer' }) %>
 
 <% const dataset = (metrics && metrics.dataset_summary) ? metrics.dataset_summary : {}; %>
 
@@ -147,4 +147,4 @@
   </div>
 </div>
 
-<%- include('partials/footer') %>
+<%- include('../partials/footer') %>
