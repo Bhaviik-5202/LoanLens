@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: loanlens
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: FLASK_BACKEND_URL
+        value: http://127.0.0.1:5001
+      - key: USE_REMOTE_BACKEND
+        value: "true"
+      - key: FLASK_PORT
+        value: "5001"
+      - key: FLASK_HOST
+        value: "127.0.0.1"
+      - key: ALLOWED_ORIGINS
+        value: "*"
