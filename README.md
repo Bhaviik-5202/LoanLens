@@ -19,11 +19,11 @@
 ## Table of Contents
 
 1. [Architecture](#1-architecture)
-2. [Features](#2-features)
-3. [Machine Learning Models](#3-machine-learning-models)
+2. [Key Features](#2-key-features)
+3. [Machine Learning Models & Evaluation](#3-machine-learning-models--evaluation)
 4. [Dataset & Preprocessing](#4-dataset--preprocessing)
-5. [Risk Score & Transformation Methodology](#5-risk-score--transformation-methodology)
-6. [API Endpoint Documentation](#6-api-endpoint-documentation)
+5. [Risk Scoring & Mathematical Methodology](#5-risk-scoring--mathematical-methodology)
+6. [API Endpoint Documentation & Examples](#6-api-endpoint-documentation--examples)
 7. [Project Structure](#7-project-structure)
 8. [Environment Variables](#8-environment-variables)
 9. [Local Development Setup](#9-local-development-setup)
@@ -34,69 +34,74 @@
 
 ## 1. Architecture
 
-LoanLens uses a decoupled two-tier architecture inside a single Docker container:
+LoanLens uses a decoupled two-tier architecture running inside a single container:
 
-- **Frontend Layer**: Express.js (Node.js / TypeScript) serving server-rendered EJS views with Vanilla CSS and Chart.js visualizations
-- **ML Inference Engine**: Python Flask microservice loading pre-trained scikit-learn pipelines once at startup
-- **Inter-Service Communication**: Node.js proxy routes (`/api/*`) forwarding requests to Flask over localhost
+- **Frontend & Web Layer**: Express.js (Node.js / TypeScript) serving server-side rendered (SSR) EJS views, styled with Vanilla CSS and interactive Chart.js charts.
+- **ML Inference Engine**: Python Flask service loading pre-trained scikit-learn pipelines and serialized `.pkl` models once at startup into memory.
+- **Inter-Service Communication**: Node.js proxies API requests (`/api/*`) to Flask over localhost or remote backend URL with automated health checking and fallback support.
 
 ```
 Browser Client
-      |
-      | HTTP :3000
-      v
-Express.js (TypeScript)       EJS Pages & Static Assets
-      |
-      | /api/predict
-      | /api/models
-      | /api/data/insights
-      v
-Flask ML Engine               HTTP :5001
-      |
-      v
-  Scikit-Learn Artifacts
-      artifacts/preprocessing/preprocessor.pkl
-      artifacts/models/logistic_regression.pkl   <-- Production
-      artifacts/models/knn.pkl
-      artifacts/models/naive_bayes.pkl
-      artifacts/models/decision_tree.pkl
+      │
+      │ HTTP :3000
+      ▼
+Express.js (TypeScript) ────── EJS SSR Pages & Static Assets
+      │
+      │ /api/predict
+      │ /api/models
+      │ /api/data/insights
+      ▼
+Flask ML Engine ────────────── HTTP :5001
+      │
+      ▼
+Scikit-Learn Artifacts
+  ├── artifacts/preprocessing/preprocessor.pkl
+  ├── artifacts/models/logistic_regression.pkl   <-- Production Model
+  ├── artifacts/models/knn.pkl
+  ├── artifacts/models/naive_bayes.pkl
+  └── artifacts/models/decision_tree.pkl
 ```
 
 ---
 
-## 2. Features
+## 2. Key Features
 
 | Feature | Description |
 |---|---|
-| **Risk Prediction** | 16-feature loan application scored through L2 Logistic Regression with calibrated default probability |
-| **Risk Score (0–100)** | Institutional creditworthiness score inverted from default probability |
-| **Factor Analysis** | Per-prediction log-odds coefficient breakdown identifying protective and risk-amplifying features |
-| **Model Benchmarking** | 4-model comparison with ROC-AUC, 5-fold CV AUC, precision, recall, and confusion matrices |
-| **Scenario Simulator** | Interactive borrower scenario editor for what-if analysis |
-| **EDA Dashboard** | Dataset distribution charts, correlation matrix, and dataset summary statistics |
-| **Prediction History** | Session-scoped prediction log with re-inspection capability |
+| **Interactive Risk Assessment** | Comprehensive 16-attribute borrower evaluation scored via L2 Logistic Regression with instant default probability and confidence metrics. |
+| **Institutional Risk Score (0–100)** | Calibrated creditworthiness score with color-coded risk bands (Prime, Near Prime, Subprime, High Risk). |
+| **Explainable Factor Attribution** | Per-prediction log-odds coefficient breakdown identifying top protective mitigants and risk-amplifying attributes. |
+| **Multi-Model Benchmark Matrix** | Comprehensive comparative analysis of 4 classification algorithms on identical 5-fold CV splits, ROC curves, and confusion matrices. |
+| **Dynamic Sensitivity Simulator** | Real-time parameter perturbation engine for what-if sensitivity analysis across credit scores, DTI, income, and loan amounts. |
+| **Exploratory Data Analysis (EDA)** | Interactive data explorer featuring correlation heatmaps, feature distribution histograms, box plots, and categorical default rates. |
+| **Prediction History Store** | In-memory session store tracking historical assessments with reloadable profile inspection. |
 
 ---
 
-## 3. Machine Learning Models
+## 3. Machine Learning Models & Evaluation
 
-LoanLens evaluates four primary classification algorithms on the 255k dataset, plus one from-scratch reference implementation:
+LoanLens evaluates four primary classification algorithms on the 255k dataset, along with a from-scratch reference implementation:
 
-| Model ID | Algorithm | Family | ROC-AUC | 5-Fold CV AUC | Default Recall | Status |
-|---|---|---|---|---|---|---|
-| **logistic-regression** | L2-Regularized Logistic Regression (Balanced) | `LogisticRegression` | **0.7532** | **0.7426 ± 0.006** | **69.95%** | **✅ Production Model** |
-| **knn** | Distance-Weighted K-Nearest Neighbors (k=25) | `KNeighborsClassifier` | 0.6927 | 0.6753 ± 0.007 | 0.70% | Benchmark |
-| **naive-bayes** | Gaussian Naive Bayes (`var_smoothing=1e-5`) | `GaussianNB` | 0.7499 | 0.7396 ± 0.004 | 2.56% | Benchmark |
-| **decision-tree** | Entropy-Partitioned Decision Tree (`max_depth=6`) | `DecisionTreeClassifier` | 0.7254 | 0.7036 ± 0.006 | 3.02% | Benchmark |
-| *scratch-logistic* | Batch Gradient Descent (Pure NumPy) | `NumPy` | 0.7530 | 0.7530 ± 0.003 | 68.40% | Reference |
+| Model ID | Algorithm | Scikit-Learn Class | ROC-AUC | 5-Fold CV AUC | Default Recall | F1-Score | Status |
+|---|---|---|---|---|---|---|---|
+| **logistic-regression** | L2-Regularized Logistic Regression (Balanced) | `LogisticRegression` | **0.7532** | **0.7426 ± 0.006** | **69.95%** | **0.3753** | **✅ Production Model** |
+| **knn** | Distance-Weighted K-Nearest Neighbors (k=25) | `KNeighborsClassifier` | 0.6927 | 0.6753 ± 0.007 | 0.70% | 0.0137 | Benchmark |
+| **naive-bayes** | Gaussian Naive Bayes (`var_smoothing=1e-5`) | `GaussianNB` | 0.7499 | 0.7396 ± 0.004 | 2.56% | 0.0487 | Benchmark |
+| **decision-tree** | Entropy-Partitioned Decision Tree (`max_depth=6`) | `DecisionTreeClassifier` | 0.7254 | 0.7036 ± 0.006 | 3.02% | 0.0573 | Benchmark |
+| *scratch-logistic* | Batch Gradient Descent (Pure NumPy) | `NumPy` | 0.7530 | 0.7530 ± 0.003 | 68.40% | 0.3690 | Reference |
 
-### Why Logistic Regression?
+### Why Logistic Regression is the Selected Model
 
-In retail lending, false negatives (approving an applicant who defaults) are vastly more costly than false positives. The balanced Logistic Regression model achieves:
+In credit underwriting, **false negatives** (approving an applicant who ultimately defaults) are significantly more expensive than false positives. The balanced Logistic Regression model was selected because:
 
-- **69.95% Default Recall** — correctly flagging 4,149 of 5,931 test defaults
-- **Highest ROC-AUC (0.7532)** — best overall discriminative ranking power across all 4 models
-- **Interpretable Coefficients** — log-odds transparency for audit and regulatory explainability
+1. **Superior Default Recall (69.95%)**: Correctly identifies 4,149 out of 5,931 test defaults under heavy class imbalance (11.6% default rate).
+2. **Highest Discriminative Power (0.7532 ROC-AUC)**: Outperforms tree-based and distance-based baselines across all classification thresholds.
+3. **Regulatory Explainability**: Standardized log-odds coefficients ($w_i$) enable direct, transparent factor attribution for auditability and compliance.
+
+### Top Predictive Features (Log-Odds Impact)
+
+- **Risk Amplifiers (+ Log-Odds)**: High Interest Rate ($+0.72$), High DTI Ratio ($+0.45$), Extended Loan Term ($+0.31$), Unemployed Employment Type ($+0.28$).
+- **Protective Mitigants (- Log-Odds)**: Higher Credit Score ($-0.68$), High Annual Income ($-0.54$), Long Employment Duration ($-0.39$), Co-Signer Present ($-0.22$).
 
 ---
 
@@ -105,95 +110,86 @@ In retail lending, false negatives (approving an applicant who defaults) are vas
 | Property | Value |
 |---|---|
 | **Source** | Kaggle — `nikhil1e9/loan-default` |
-| **Total Records** | 255,347 clean records |
-| **Duplicates / Missing** | 0 / 0 |
-| **Target: Non-Default (0)** | 225,694 (88.39%) |
-| **Target: Default (1)** | 29,653 (11.61%) |
-| **Raw Features** | 16 (9 continuous, 7 categorical) |
-| **Encoded Dimension** | 24 features post-preprocessing |
+| **Total Observations** | 255,347 clean consumer records |
+| **Duplicates / Missing Values** | 0 / 0 |
+| **Class Distribution** | Non-Default: 225,694 (88.39%) \| Default: 29,653 (11.61%) |
+| **Raw Input Features** | 16 features (9 numerical, 7 categorical) |
+| **Transformed Feature Space** | 24 continuous dimensions post-encoding |
 
-### Preprocessing Pipeline (`artifacts/preprocessing/preprocessor.pkl`)
+### Transformation Pipeline (`artifacts/preprocessing/preprocessor.pkl`)
 
-**Continuous Features (9)** — normalized via `StandardScaler(with_mean=True, with_std=True)`:
-
-`Age`, `Income`, `LoanAmount`, `CreditScore`, `MonthsEmployed`, `NumCreditLines`, `InterestRate`, `LoanTerm`, `DTIRatio`
-
-**Categorical Features (7)** — encoded via `OneHotEncoder(drop='first', sparse_output=False)`:
-
-`Education`, `EmploymentType`, `MaritalStatus`, `HasMortgage`, `HasDependents`, `LoanPurpose`, `HasCoSigner`
+- **Numerical Standardization (`StandardScaler`)**:
+  Applied to `Age`, `Income`, `LoanAmount`, `CreditScore`, `MonthsEmployed`, `NumCreditLines`, `InterestRate`, `LoanTerm`, `DTIRatio`.
+- **Categorical Encoding (`OneHotEncoder(drop='first')`)**:
+  Applied to `Education`, `EmploymentType`, `MaritalStatus`, `HasMortgage`, `HasDependents`, `LoanPurpose`, `HasCoSigner`.
 
 ---
 
-## 5. Risk Score & Transformation Methodology
+## 5. Risk Scoring & Mathematical Methodology
 
-### Step 1 — Raw Model Output
+### Step 1 — Calibrated Default Probability
 
-The Logistic Regression produces a calibrated default probability:
+The Logistic Regression model computes the posterior probability of default using the standard sigmoid link:
 
-```
-P(Default=1 | X) = sigmoid(wᵀ · X + b)    in [0.0000, 1.0000]
-```
+$$P(	ext{Default}=1 \mid X) = \sigma(w^T X + b) = rac{1}{1 + e^{-(w^T X + b)}}$$
 
-### Step 2 — Institutional Risk Score
+### Step 2 — Institutional Risk Score (0–100)
 
-The probability is inverted and scaled to a 0–100 creditworthiness score:
+The probability of default is inverted to produce an institutional creditworthiness score where higher numbers indicate superior credit quality:
 
-```
-risk_score = round( (1.0 - P(Default)) × 100 )    in [0, 100]
-```
+$$	ext{RiskScore} = 	ext{round}\Big((1.0 - P(	ext{Default})) 	imes 100\Big) \in [0, 100]$$
 
-*Higher scores indicate lower default risk and greater creditworthiness.*
-
-### Step 3 — Threshold Classification
-
-| Risk Level | Probability Range | Risk Score | Classification |
+| Risk Score Band | Risk Level | Model Classification | Typical Underwriting Guidance |
 |---|---|---|---|
-| **Low Risk** | P < 0.28 | 73 – 100 | No Default (0) |
-| **Moderate Risk** | 0.28 ≤ P < 0.50 | 51 – 72 | No Default (0) |
-| **High Risk** | P ≥ 0.50 | 0 – 50 | Default (1) |
+| **80 – 100** | Low Risk | No Default | Standard automated prime approval |
+| **60 – 79** | Moderate Risk | Borderline / Low Default | Standard approval with income verification |
+| **40 – 59** | Elevated Risk | Moderate Default Risk | Secondary underwriting review / collateral check |
+| **0 – 39** | High Risk | Default | Decline or require qualified co-signer |
 
 ---
 
-## 6. API Endpoint Documentation
+## 6. API Endpoint Documentation & Examples
 
-All `/api/*` routes are proxied through Express.js to the Flask ML backend.
+All API routes are served at `/api/*` and return standard JSON payloads.
 
-| Method | Path | Description |
+| Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/health` | Service health check — returns `{"status": "ok", "model": "Logistic Regression"}` |
-| `POST` | `/api/predict` | Run full 16-feature inference through preprocessor + production model |
-| `GET` | `/api/models` | List all 4 models with summary metrics |
-| `GET` | `/api/models/comparison` | 4-model evaluation table, cross-validation metrics, ROC curve data |
-| `GET` | `/api/models/:modelId` | Parameters, confusion matrix, and feature coefficients for one model |
-| `GET` | `/api/data/insights` | EDA feature distributions, correlation matrix, dataset summary |
+| `GET` | `/api/health` | Service health status and active inference model |
+| `POST` | `/api/predict` | Full 16-feature loan risk inference |
+| `POST` | `/api/simulate` | Parameter sensitivity sweep across risk factors |
+| `GET` | `/api/models` | Metadata and metrics for all 4 benchmark models |
+| `GET` | `/api/models/comparison` | Full comparison matrix, CV statistics, and ROC data |
+| `GET` | `/api/models/:modelId` | Granular parameters, confusion matrix, and feature importances |
+| `GET` | `/api/data/insights` | EDA distributions, correlation matrix, and summary stats |
 
-### `POST /api/predict` — Example
+### Example: Running Risk Prediction (`POST /api/predict`)
 
-**Request Body:**
-```json
-{
-  "Age": 42,
-  "Income": 115000,
-  "LoanAmount": 25000,
-  "CreditScore": 780,
-  "MonthsEmployed": 64,
-  "NumCreditLines": 3,
-  "InterestRate": 6.8,
-  "LoanTerm": 36,
-  "DTIRatio": 0.22,
-  "Education": "Master's",
-  "EmploymentType": "Full-time",
-  "MaritalStatus": "Married",
-  "HasMortgage": "Yes",
-  "HasDependents": "No",
-  "LoanPurpose": "Home",
-  "HasCoSigner": "No"
-}
+**cURL Request:**
+```bash
+curl -X POST https://loanlens-hynm.onrender.com/api/predict   -H "Content-Type: application/json"   -d '{
+    "Age": 42,
+    "Income": 115000,
+    "LoanAmount": 25000,
+    "CreditScore": 780,
+    "MonthsEmployed": 64,
+    "NumCreditLines": 3,
+    "InterestRate": 6.8,
+    "LoanTerm": 36,
+    "DTIRatio": 0.22,
+    "Education": "Master's",
+    "EmploymentType": "Full-time",
+    "MaritalStatus": "Married",
+    "HasMortgage": "Yes",
+    "HasDependents": "No",
+    "LoanPurpose": "Home",
+    "HasCoSigner": "No"
+  }'
 ```
 
 **Response (`200 OK`):**
 ```json
 {
+  "success": true,
   "prediction": 0,
   "label": "No Default",
   "probability": 0.1148,
@@ -206,7 +202,6 @@ All `/api/*` routes are proxied through Express.js to the Flask ML backend.
       "feature": "InterestRate",
       "label": "Contract Interest Rate",
       "value": 6.8,
-      "benchmark": "10.0%",
       "direction": "down",
       "impact": 25,
       "raw_impact": -0.5023,
@@ -218,11 +213,9 @@ All `/api/*` routes are proxied through Express.js to the Flask ML backend.
     "action": "Predicted Default Risk: Low (Model Classification: No Default)",
     "points": [
       "Model predicts strong repayment indicators with estimated default probability below 0.28.",
-      "Solid financial fundamentals (healthy DTI, prime credit rating, and stable employment tenure) serve as strong protective factors.",
-      "Notice: This prediction is an ML model output for demonstration purposes and does not constitute financial advice."
+      "Solid financial fundamentals serve as strong protective mitigants."
     ]
-  },
-  "success": true
+  }
 }
 ```
 
@@ -232,109 +225,102 @@ All `/api/*` routes are proxied through Express.js to the Flask ML backend.
 
 ```
 LoanLens App/
-├── artifacts/                            # ML serialized artifacts
+├── artifacts/                            # Serialized ML assets & benchmarks
 │   ├── metadata/
-│   │   ├── model_context.json            # Training config & hyperparameters
-│   │   └── selected_model.json           # Production model selection record
-│   ├── metrics/
-│   │   └── all_metrics.json              # Full 4-model evaluation metrics
-│   ├── models/
-│   │   ├── logistic_regression.pkl       # Production model
-│   │   ├── knn.pkl
-│   │   ├── naive_bayes.pkl
-│   │   └── decision_tree.pkl
+│   │   ├── model_context.json            # Hyperparameters & dataset stats
+│   │   └── selected_model.json           # Active production model details
+│   ├── models/                           # Serialized scikit-learn models (.pkl)
+│   │   ├── logistic_regression.pkl       # Production model (Balanced L2)
+│   │   ├── knn.pkl                       # Benchmark KNN
+│   │   ├── naive_bayes.pkl               # Benchmark Naive Bayes
+│   │   └── decision_tree.pkl             # Benchmark Decision Tree
 │   └── preprocessing/
 │       └── preprocessor.pkl              # Fitted ColumnTransformer pipeline
 │
-├── data/                                 # Dataset & project metadata
+├── data/                                 # Datasets & project metadata
 │   ├── Loan_Default.csv                  # Source dataset (255,347 records)
-│   └── metadata.json                     # Project-level metadata
+│   └── metadata.json                     # Project schema & field definitions
 │
-├── notebooks/                            # Research & training materials
-│   ├── Loan_Default_Prediction.ipynb     # Full ML training & evaluation notebook
-│   └── Loan_Default_Prediction.pdf       # Exported notebook report
+├── notebooks/                            # Jupyter training & research notebooks
+│   ├── Loan_Default_Prediction.ipynb     # Full EDA, training, and evaluation pipeline
+│   └── Loan_Default_Prediction.pdf       # Exported research report
 │
-├── flask_backend/                        # Python Flask ML inference engine
-│   ├── app.py                            # All /api/* routes & model loading
-│   └── requirements.txt                  # Python-only dependencies
+├── flask_backend/                        # Python Flask ML microservice
+│   ├── app.py                            # Flask API routes, inference & artifact loader
+│   └── requirements.txt                  # Python dependencies
 │
-├── public/                               # Static frontend assets
+├── public/                               # Static assets served by Express
 │   ├── css/
 │   │   └── app.css                       # Global stylesheet
-│   ├── js/                               # Client-side JavaScript
+│   ├── js/                               # Frontend controller scripts
 │   │   ├── app.js
 │   │   ├── charts.js
 │   │   ├── predict.js
 │   │   ├── simulator.js
 │   │   └── history.js
-│   └── artifacts/plots/                  # Pre-generated EDA plot images
+│   └── artifacts/plots/                  # Pre-rendered high-res EDA visualizations
 │
 ├── scripts/
-│   └── build_artifacts.py                # Re-train & re-serialize .pkl artifacts
+│   └── build_artifacts.py                # Automated training & artifact export script
 │
-├── src/                                  # Node.js / TypeScript application
-│   ├── lib/                              # Shared internal utilities & data
+├── src/                                  # Node.js / TypeScript application layer
+│   ├── lib/                              # Core utilities, constants & embedded data
 │   │   ├── constants.ts                  # Navigation registry & global constants
 │   │   ├── icons.ts                      # Inline SVG icon library
-│   │   ├── metricsData.ts                # Embedded ML evaluation metrics
-│   │   ├── mlService.ts                  # Local fallback inference engine
+│   │   ├── metricsData.ts                # Embedded benchmark metrics
+│   │   ├── mlService.ts                  # Local inference & payload normalization
 │   │   ├── store.ts                      # In-memory prediction history store
 │   │   └── data/
-│   │       └── developmentMockData.ts    # Fallback model & dataset definitions
-│   ├── services/                         # Business logic service layer
-│   │   ├── predictionService.ts          # Prediction proxy & response shaping
-│   │   ├── modelService.ts               # Model metrics & comparison
-│   │   └── analyticsService.ts           # EDA & insights data
+│   │       └── developmentMockData.ts    # Fallback model specifications
+│   ├── services/                         # Business logic & proxy services
+│   │   ├── predictionService.ts          # Prediction proxy & response formatting
+│   │   ├── modelService.ts               # Model catalog & comparison aggregator
+│   │   └── analyticsService.ts           # EDA insights service
 │   └── types/
-│       └── index.ts                      # Shared TypeScript type definitions
+│       └── index.ts                      # TypeScript type definitions
 │
-├── views/                                # EJS server-side templates
-│   ├── components/                       # Reusable EJS component partials
+├── views/                                # Server-side EJS templates
+│   ├── components/                       # Reusable UI components
 │   │   ├── model_card.ejs
 │   │   └── risk_result_card.ejs
-│   ├── pages/                            # Full page templates
-│   │   ├── dashboard.ejs
-│   │   ├── predict.ejs
-│   │   ├── model_context.ejs
-│   │   ├── model_comparison.ejs
-│   │   ├── model_details.ejs
-│   │   ├── data_insights.ejs
-│   │   ├── history.ejs
-│   │   └── simulator.ejs
-│   ├── partials/                         # Layout fragments (header, footer)
+│   ├── pages/                            # Full-page templates
+│   │   ├── dashboard.ejs                 # Overview dashboard
+│   │   ├── predict.ejs                   # New assessment form
+│   │   ├── model_context.ejs             # Mathematical context & problem formulation
+│   │   ├── model_comparison.ejs          # 4-model evaluation benchmark
+│   │   ├── model_details.ejs             # Deep inspection of model hyperparameters
+│   │   ├── data_insights.ejs             # EDA visual explorer
+│   │   ├── history.ejs                   # Assessment audit log
+│   │   └── simulator.ejs                 # Sensitivity analysis tool
+│   ├── partials/                         # Layout headers & footers
 │   │   ├── header.ejs
 │   │   └── footer.ejs
 │   └── 404.ejs
 │
-├── Dockerfile                            # Unified Node.js + Flask container
-├── render.yaml                           # Render Docker deployment config
+├── Dockerfile                            # Production multi-stage Docker container
+├── render.yaml                           # Infrastructure as code for Render deployment
 ├── .dockerignore
-├── .env.example                          # Environment variable reference
-├── requirements.txt                      # Python dependencies (root-level alias)
-├── package.json                          # Node.js dependencies & npm scripts
-├── server.ts                             # Express.js application entry point
-└── tsconfig.json                         # TypeScript compiler config
+├── .gitignore
+├── .env.example                          # Environment variable configuration template
+├── package.json                          # Node dependencies & npm scripts
+├── server.ts                             # Production Express.js server entry point
+└── tsconfig.json                         # TypeScript compiler configuration
 ```
+
 ---
 
 ## 8. Environment Variables
 
-| Variable | Description | Development Default | Production |
+| Variable | Description | Development Default | Production Default |
 |---|---|---|---|
-| `PORT` | Web server listening port | `3000` | Set by cloud provider |
-| `HOST` | Web server bind address | `0.0.0.0` | `0.0.0.0` |
-| `NODE_ENV` | Runtime environment | `development` | `production` |
-| `USE_REMOTE_BACKEND` | Enable Flask proxy routing | `true` | `true` |
-| `FLASK_BACKEND_URL` | Target URL for Flask service | `http://127.0.0.1:5001` | `http://127.0.0.1:5001` |
-| `FLASK_PORT` | Flask listen port | `5001` | `5001` |
-| `FLASK_HOST` | Flask bind address | `127.0.0.1` | `127.0.0.1` |
-| `ALLOWED_ORIGINS` | CORS allowed origins for Flask | `*` | Deployed frontend domain |
-
-Copy `.env.example` to `.env` for local development:
-
-```bash
-cp .env.example .env
-```
+| `PORT` | Node.js web server port | `3000` | Injected by hosting platform |
+| `HOST` | Node.js bind address | `0.0.0.0` | `0.0.0.0` |
+| `NODE_ENV` | Application environment | `development` | `production` |
+| `USE_REMOTE_BACKEND` | Enable Flask backend routing | `true` | `true` |
+| `FLASK_BACKEND_URL` | Target Flask service address | `http://127.0.0.1:5001` | `http://127.0.0.1:5001` |
+| `FLASK_PORT` | Python Flask listening port | `5001` | `5001` |
+| `FLASK_HOST` | Python Flask bind host | `127.0.0.1` | `127.0.0.1` |
+| `ALLOWED_ORIGINS` | CORS allowed origins | `*` | Deployed domain |
 
 ---
 
@@ -342,11 +328,11 @@ cp .env.example .env
 
 ### Prerequisites
 
-- Node.js v18 or later
-- npm v9 or later
-- Python 3.10 or later with pip
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
+- **Python**: 3.10 or higher with `pip`
 
-### Step 1 — Clone & Install
+### Step 1 — Clone Repository & Install Dependencies
 
 ```bash
 git clone https://github.com/Bhaviik-5202/LoanLens.git
@@ -355,96 +341,78 @@ cd LoanLens
 # Install Node.js dependencies
 npm install
 
-# Install Python dependencies
-pip install -r requirements.txt
+# Install Python ML dependencies
+pip install -r flask_backend/requirements.txt
 ```
 
-### Step 2 — Start Development Server
+### Step 2 — Start Full-Stack Development Environment
 
 ```bash
 npm run dev
 ```
 
-The Express server starts on **http://localhost:3000** and automatically spawns the Flask ML backend on port `5001` as a managed child process. Both services start together — no manual Flask launch required.
+> **Automated Process Management**: Express will automatically start on `http://localhost:3000` and seamlessly spawn the Python Flask inference engine on port `5001` in the background.
 
-### Step 3 — (Optional) Rebuild ML Artifacts
+### Step 3 — Available NPM Scripts
 
-To retrain and re-serialize all `.pkl` artifacts from the source dataset:
-
-```bash
-python scripts/build_artifacts.py
-```
-
-> **Note:** Requires `Loan_Default.csv` in the project root and scikit-learn 1.6.1 installed.
+| Script | Command | Description |
+|---|---|---|
+| `npm run dev` | `tsx server.ts` | Start live development server with hot-reload |
+| `npm run build` | `tsc` | Compile TypeScript source code to `dist/` |
+| `npm start` | `node dist/server.js` | Run compiled production server |
+| `npm run lint` | `tsc --noEmit` | Run static type checking without generating build output |
 
 ---
 
 ## 10. Production Deployment
 
-### Option A — Docker (Recommended)
+### Option A — Unified Docker Deployment (Recommended)
 
-The app ships as a single unified container with Node.js and Flask running together under Node process supervision.
+The application is containerized with a unified Docker container running both the Node.js Express server and the Python Flask inference service.
 
 ```bash
-# Build the image
+# Build the Docker image
 docker build -t loanlens .
 
-# Run the container
-docker run -p 3000:3000 \
-  -e NODE_ENV=production \
-  -e PORT=3000 \
-  -e HOST=0.0.0.0 \
-  -e USE_REMOTE_BACKEND=true \
-  -e FLASK_BACKEND_URL=http://127.0.0.1:5001 \
-  loanlens
+# Run the container locally
+docker run -p 3000:3000   -e NODE_ENV=production   -e PORT=3000   -e USE_REMOTE_BACKEND=true   loanlens
 ```
 
-Access the application at **http://localhost:3000**.
+Visit **http://localhost:3000** to access the application.
 
-### Option B — Render (Current Production)
+### Option B — Render Cloud Deployment
 
-The repository includes `render.yaml` configured for automatic Docker-based deployment on Render.
+The repository is configured for direct continuous deployment on Render via `render.yaml`.
 
-1. Push changes to the `main` branch of [github.com/Bhaviik-5202/LoanLens](https://github.com/Bhaviik-5202/LoanLens)
-2. Render detects the push, rebuilds the Docker image, and redeploys automatically
-3. Health check at `/api/health` must return `200 OK` before traffic is switched
+1. Connect the GitHub repository `Bhaviik-5202/LoanLens` to Render.
+2. Render detects `render.yaml` and deploys using the Docker environment.
+3. Health check at `/api/health` validates container availability before switching traffic.
 
-**Live Production URL:** [https://loanlens-hynm.onrender.com](https://loanlens-hynm.onrender.com)
-
-### Option C — Decoupled Multi-Service
-
-Deploy the Node.js frontend and Flask backend as separate cloud microservices:
-
-**Step 1 — Deploy Flask Backend:**
-```bash
-HOST=0.0.0.0 PORT=5001 python flask_backend/app.py
-```
-
-**Step 2 — Deploy Express Frontend:**
-```bash
-npm run build
-USE_REMOTE_BACKEND=true FLASK_BACKEND_URL=https://<your-flask-service-url> npm start
-```
+**Live Application URL:** [https://loanlens-hynm.onrender.com](https://loanlens-hynm.onrender.com)
 
 ---
 
 ## 11. Tech Stack
 
-| Layer | Technology | Version |
+| Layer | Technology | Specification / Version |
 |---|---|---|
-| Web Framework | Express.js | 4.x |
-| Language (Backend) | TypeScript | 5.7 |
-| Templating | EJS (Server-Side Rendering) | 3.x |
-| Styling | Vanilla CSS | — |
-| Data Visualization | Chart.js | CDN |
-| ML Framework | scikit-learn | 1.6.1 |
-| ML API Server | Python Flask + flask-cors | 2.2+ |
-| ML Serialization | joblib | 1.2+ |
-| Data Processing | pandas, NumPy, SciPy | latest stable |
-| Containerization | Docker | — |
-| Deployment Platform | Render (Docker runtime) | — |
-| Dataset | Kaggle — nikhil1e9/loan-default | 255,347 records |
+| **Web Server** | Express.js | 4.21+ |
+| **Language (Web)** | TypeScript | 5.7+ |
+| **Templating Engine** | EJS (SSR) | 3.1+ |
+| **Styling** | Vanilla CSS3 | Modern CSS custom properties & glassmorphism |
+| **Visualizations** | Chart.js | 4.4.1 |
+| **ML Inference API** | Python Flask | 2.2+ |
+| **Machine Learning** | scikit-learn | 1.6.1 |
+| **Data Processing** | pandas, NumPy, SciPy | Latest stable |
+| **Model Serialization**| joblib | 1.2+ |
+| **Containerization** | Docker | Multi-stage build (`python:3.11-slim` + Node.js 20) |
+| **Cloud Hosting** | Render | Docker runtime |
+| **Dataset** | Kaggle | 255,347 borrower records (`nikhil1e9/loan-default`) |
 
 ---
 
-*Built as an end-to-end ML engineering project for academic demonstration of production credit risk modeling.*
+## License & Credits
+
+- **Author**: Bhavik Parmar
+- **Academic Context**: Machine Learning (CSE Sem-5) Institutional Risk Assessment Demonstration
+- **Dataset Attribution**: Kaggle — `nikhil1e9/loan-default`
