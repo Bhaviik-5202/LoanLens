@@ -1,103 +1,164 @@
-<%- include('../partials/header', { title: 'New Assessment — LoanLens', crumb: '<b>Workspace</b> / New Assessment', currentPath: '/assess' }) %>
+<%- include('../partials/header', { title: 'New Risk Assessment — LoanLens', crumb: '<b>Workspace</b> / New Assessment', currentPath: '/assess' }) %>
 
-<div style="max-width: 960px; margin: 0 auto; padding-bottom: 60px;">
+<div style="max-width: 1040px; margin: 0 auto; padding-bottom: 60px;">
 
-  <div class="page-head" style="margin-bottom: 24px;">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+  <!-- Page Header -->
+  <div style="margin-bottom: 28px; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+    <div>
+      <h1 style="font-size:26px; font-weight:700; margin:0 0 6px 0; color:var(--text);">Borrower Risk Assessment</h1>
+      <p style="color:var(--muted); margin:0; font-size:14px;">
+        Submit borrower attributes to evaluate default probability, credit risk signals, and explainable factors.
+      </p>
+    </div>
+
+    <!-- Quick Sample Presets (Exact 16 features, No Name) -->
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;">Load Sample:</span>
+      <button type="button" class="btn btn-secondary" data-preset="prime" style="padding:6px 12px; font-size:12px;">
+        Prime (Low Risk)
+      </button>
+      <button type="button" class="btn btn-secondary" data-preset="moderate" style="padding:6px 12px; font-size:12px;">
+        Moderate Risk
+      </button>
+      <button type="button" class="btn btn-secondary" data-preset="subprime" style="padding:6px 12px; font-size:12px;">
+        Subprime (High Risk)
+      </button>
+    </div>
+  </div>
+
+  <!-- Honest Model Selector Section -->
+  <div class="card card-padded" style="margin-bottom:28px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <div>
-        <h1 style="font-size:26px; font-weight:700; margin:0 0 6px 0;">New Borrower Risk Assessment</h1>
-        <p style="color:var(--text-muted); margin:0; font-size:14px;">
-          Submit borrower attributes to evaluate default probability, credit risk signals, and policy recommendations.
+        <h2 style="font-size:15px; font-weight:700; margin:0 0 2px;">Machine Learning Inference Architecture</h2>
+        <p style="font-size:12px; color:var(--muted); margin:0;">
+          Logistic Regression is designated as the active production scoring model. Other models are benchmark baselines.
         </p>
       </div>
+      <a href="/model/comparison" style="font-size:12px; color:var(--brand); font-weight:600; text-decoration:none;">
+        Compare All Models &rarr;
+      </a>
+    </div>
 
-      <!-- Quick preset test buttons for reviewers -->
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Load Sample:</span>
-        <button type="button" class="btn-ghost" data-preset="prime" style="padding:4px 10px; font-size:12px; min-height:30px;">
-          Prime (Low Risk)
-        </button>
-        <button type="button" class="btn-ghost" data-preset="moderate" style="padding:4px 10px; font-size:12px; min-height:30px;">
-          Moderate Risk
-        </button>
-        <button type="button" class="btn-ghost" data-preset="subprime" style="padding:4px 10px; font-size:12px; min-height:30px;">
-          Subprime (High Risk)
-        </button>
+    <div class="model-selector-grid">
+      <!-- 1. Active Production Model -->
+      <div class="model-option-card selected" data-model="logistic_regression">
+        <div class="model-option-head">
+          <span class="model-name">Logistic Regression</span>
+          <span class="model-status-tag tag-active">&#10003; Active Model</span>
+        </div>
+        <div class="model-meta-info">
+          L2-regularized balanced inference engine. 0.7532 ROC-AUC &middot; 69.95% recall.
+        </div>
       </div>
+
+      <!-- 2. KNN Benchmark -->
+      <div class="model-option-card" data-model="knn" title="Click to view benchmark information">
+        <div class="model-option-head">
+          <span class="model-name">K-Nearest Neighbors</span>
+          <span class="model-status-tag tag-benchmark">Benchmark Only</span>
+        </div>
+        <div class="model-meta-info">
+          Distance-weighted (k=25). Evaluated for local metric baseline comparison.
+        </div>
+      </div>
+
+      <!-- 3. Naive Bayes Benchmark -->
+      <div class="model-option-card" data-model="naive_bayes" title="Click to view benchmark information">
+        <div class="model-option-head">
+          <span class="model-name">Gaussian Naive Bayes</span>
+          <span class="model-status-tag tag-benchmark">Benchmark Only</span>
+        </div>
+        <div class="model-meta-info">
+          Probabilistic independence baseline with variance smoothing (1e-5).
+        </div>
+      </div>
+
+      <!-- 4. Decision Tree Benchmark -->
+      <div class="model-option-card" data-model="decision_tree" title="Click to view benchmark information">
+        <div class="model-option-head">
+          <span class="model-name">Decision Tree</span>
+          <span class="model-status-tag tag-benchmark">Benchmark Only</span>
+        </div>
+        <div class="model-meta-info">
+          Entropy partitioning (max_depth=6). Structural decision comparison.
+        </div>
+      </div>
+    </div>
+
+    <!-- Benchmark Model Information Banner (hidden by default) -->
+    <div id="benchmarkNotice" style="display:none; padding:12px 16px; background:var(--panel-2); border-left:3px solid var(--brand); border-radius:6px; font-size:12px; color:var(--text-secondary);">
+      <span id="benchmarkNoticeText"></span>
+      <a href="/model/comparison" style="margin-left:8px; color:var(--brand); font-weight:600;">View in Comparison Matrix &rarr;</a>
     </div>
   </div>
 
   <!-- Main Assessment Form Card -->
-  <div class="card" id="formCard" style="padding:32px; box-shadow:var(--shadow-1);">
+  <div class="card card-padded" id="formCard">
     <form id="assessmentForm" onsubmit="return false;">
 
       <!-- SECTION 1: Borrower Information -->
       <div style="margin-bottom:32px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-          <span style="width:24px; height:24px; border-radius:50%; background:rgba(49,135,125,0.15); color:var(--brand); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">1</span>
-          <h2 style="font-size:17px; font-weight:700; margin:0;">Borrower Information</h2>
+          <span style="width:24px; height:24px; border-radius:50%; background:var(--brand-soft); color:var(--brand); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">1</span>
+          <h2 style="font-size:16px; font-weight:700; margin:0;">Borrower Profile</h2>
         </div>
-        <p style="font-size:13px; color:var(--muted); margin:0 0 18px 32px;">Personal and demographic background attributes.</p>
+        <p style="font-size:12px; color:var(--muted); margin:0 0 16px 32px;">Demographic background and household attributes.</p>
 
-        <div class="field-grid" style="padding-left:32px;">
-          <div class="field">
-            <label for="Name">Borrower Name (Optional)</label>
-            <span class="hint">Identifies the application in the portfolio ledger.</span>
-            <input type="text" id="Name" name="Name" placeholder="e.g. John Doe" value="Eleanor Vance" maxlength="120">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; padding-left:32px;">
+          <div class="form-group">
+            <label class="form-label" for="Age">Age (Years) *</label>
+            <input type="number" class="form-input" id="Age" name="Age" min="18" max="100" value="42" required>
+            <span class="form-hint">Accepted range: 18 – 100</span>
           </div>
 
-          <div class="field">
-            <label for="Age">Age (Years) *</label>
-            <span class="hint">Borrower age at application (18–100).</span>
-            <input type="number" id="Age" name="Age" min="18" max="100" value="42" required>
-            <span class="err-msg">Valid age between 18 and 100 is required.</span>
-          </div>
-
-          <div class="field">
-            <label for="Education">Education Level *</label>
-            <span class="hint">Highest completed credential.</span>
-            <select id="Education" name="Education" required>
+          <div class="form-group">
+            <label class="form-label" for="Education">Education Level *</label>
+            <select class="form-select" id="Education" name="Education" required>
               <option value="High School">High School</option>
-              <option value="Bachelor's" selected>Bachelor's</option>
-              <option value="Master's">Master's</option>
+              <option value="Bachelor's">Bachelor's</option>
+              <option value="Master's" selected>Master's</option>
               <option value="PhD">PhD</option>
             </select>
           </div>
 
-          <div class="field">
-            <label for="MaritalStatus">Marital Status *</label>
-            <span class="hint">Current legal marital filing.</span>
-            <select id="MaritalStatus" name="MaritalStatus" required>
+          <div class="form-group">
+            <label class="form-label" for="MaritalStatus">Marital Status *</label>
+            <select class="form-select" id="MaritalStatus" name="MaritalStatus" required>
               <option value="Single">Single</option>
               <option value="Married" selected>Married</option>
               <option value="Divorced">Divorced</option>
             </select>
           </div>
 
-          <div class="field">
-            <label>Financially Dependent Persons *</label>
-            <span class="hint">Children or adults relying on applicant income.</span>
-            <div class="toggle-row">
-              <input type="radio" id="dep-no" name="HasDependents" value="No" checked><label for="dep-no">No</label>
-              <input type="radio" id="dep-yes" name="HasDependents" value="Yes"><label for="dep-yes">Yes</label>
-            </div>
+          <div class="form-group">
+            <label class="form-label" for="HasDependents">Has Dependents *</label>
+            <select class="form-select" id="HasDependents" name="HasDependents" required>
+              <option value="No" selected>No</option>
+              <option value="Yes">Yes</option>
+            </select>
           </div>
         </div>
       </div>
 
-      <!-- SECTION 2: Employment / Income -->
-      <div style="margin-bottom:32px; padding-top:24px; border-top:1px solid var(--border);">
+      <!-- SECTION 2: Financial Profile -->
+      <div style="margin-bottom:32px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-          <span style="width:24px; height:24px; border-radius:50%; background:rgba(49,135,125,0.15); color:var(--brand); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">2</span>
-          <h2 style="font-size:17px; font-weight:700; margin:0;">Employment / Income</h2>
+          <span style="width:24px; height:24px; border-radius:50%; background:var(--brand-soft); color:var(--brand); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">2</span>
+          <h2 style="font-size:16px; font-weight:700; margin:0;">Financial Standing</h2>
         </div>
-        <p style="font-size:13px; color:var(--muted); margin:0 0 18px 32px;">Work tenure and stability indicators.</p>
+        <p style="font-size:12px; color:var(--muted); margin:0 0 16px 32px;">Income stability, employment tenure, and credit score.</p>
 
-        <div class="field-grid" style="padding-left:32px;">
-          <div class="field">
-            <label for="EmploymentType">Employment Classification *</label>
-            <span class="hint">Current employment status.</span>
-            <select id="EmploymentType" name="EmploymentType" required>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; padding-left:32px;">
+          <div class="form-group">
+            <label class="form-label" for="Income">Annual Income ($) *</label>
+            <input type="number" class="form-input" id="Income" name="Income" min="0" max="10000000" step="1000" value="115000" required>
+            <span class="form-hint">Annual gross income in USD</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="EmploymentType">Employment Type *</label>
+            <select class="form-select" id="EmploymentType" name="EmploymentType" required>
               <option value="Full-time" selected>Full-time</option>
               <option value="Part-time">Part-time</option>
               <option value="Self-employed">Self-employed</option>
@@ -105,143 +166,127 @@
             </select>
           </div>
 
-          <div class="field">
-            <label for="MonthsEmployed">Tenure at Employer (Months) *</label>
-            <span class="hint">Continuous months in current role (0–600).</span>
-            <input type="number" id="MonthsEmployed" name="MonthsEmployed" min="0" max="600" value="64" required>
-            <span class="err-msg">Tenure in months is required.</span>
+          <div class="form-group">
+            <label class="form-label" for="MonthsEmployed">Months Employed *</label>
+            <input type="number" class="form-input" id="MonthsEmployed" name="MonthsEmployed" min="0" max="600" value="64" required>
+            <span class="form-hint">Total continuous tenure in months</span>
           </div>
 
-          <div class="field">
-            <label for="Income">Annual Verified Income ($) *</label>
-            <span class="hint">Gross annual earnings before tax.</span>
-            <input type="number" id="Income" name="Income" min="0" max="10000000" step="500" value="115000" required>
-            <span class="err-msg">Annual income is required.</span>
+          <div class="form-group">
+            <label class="form-label" for="CreditScore">Credit Score (FICO) *</label>
+            <input type="number" class="form-input" id="CreditScore" name="CreditScore" min="300" max="850" value="780" required>
+            <span class="form-hint">Standard score between 300 and 850</span>
           </div>
         </div>
       </div>
 
-      <!-- SECTION 3: Credit & Financial Information -->
-      <div style="margin-bottom:32px; padding-top:24px; border-top:1px solid var(--border);">
+      <!-- SECTION 3: Loan Details -->
+      <div style="margin-bottom:32px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-          <span style="width:24px; height:24px; border-radius:50%; background:rgba(49,135,125,0.15); color:var(--brand); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">3</span>
-          <h2 style="font-size:17px; font-weight:700; margin:0;">Credit & Financial Information</h2>
+          <span style="width:24px; height:24px; border-radius:50%; background:var(--brand-soft); color:var(--brand); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">3</span>
+          <h2 style="font-size:16px; font-weight:700; margin:0;">Requested Loan Terms</h2>
         </div>
-        <p style="font-size:13px; color:var(--muted); margin:0 0 18px 32px;">Bureau scores and ongoing solvency commitments.</p>
+        <p style="font-size:12px; color:var(--muted); margin:0 0 16px 32px;">Requested principal, contract purpose, and repayment schedule.</p>
 
-        <div class="field-grid" style="padding-left:32px;">
-          <div class="field">
-            <label for="CreditScore">Credit Score (FICO-Equivalent) *</label>
-            <span class="hint">Valid bureau score from 300 to 850.</span>
-            <input type="number" id="CreditScore" name="CreditScore" min="300" max="850" value="780" required>
-            <span class="err-msg">Credit score between 300 and 850 is required.</span>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; padding-left:32px;">
+          <div class="form-group">
+            <label class="form-label" for="LoanAmount">Loan Amount ($) *</label>
+            <input type="number" class="form-input" id="LoanAmount" name="LoanAmount" min="100" max="10000000" step="500" value="25000" required>
+            <span class="form-hint">Requested borrowing amount</span>
           </div>
 
-          <div class="field">
-            <label for="NumCreditLines">Open Credit Accounts *</label>
-            <span class="hint">Total active credit lines on bureau file (0–100).</span>
-            <input type="number" id="NumCreditLines" name="NumCreditLines" min="0" max="100" value="3" required>
-            <span class="err-msg">Credit lines count is required.</span>
-          </div>
-
-          <div class="field">
-            <label for="DTIRatio">Debt-to-Income (DTI) Ratio *</label>
-            <span class="hint">Total monthly debt obligations divided by monthly gross income (0.00–1.00).</span>
-            <input type="number" id="DTIRatio" name="DTIRatio" min="0" max="1" step="0.01" value="0.22" required>
-            <span class="err-msg">DTI Ratio between 0 and 1 is required.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION 4: Loan Information -->
-      <div style="margin-bottom:32px; padding-top:24px; border-top:1px solid var(--border);">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-          <span style="width:24px; height:24px; border-radius:50%; background:rgba(49,135,125,0.15); color:var(--brand); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">4</span>
-          <h2 style="font-size:17px; font-weight:700; margin:0;">Loan Information</h2>
-        </div>
-        <p style="font-size:13px; color:var(--muted); margin:0 0 18px 32px;">Requested principal amount, term length, and risk mitigations.</p>
-
-        <div class="field-grid" style="padding-left:32px;">
-          <div class="field">
-            <label for="LoanAmount">Requested Loan Principal ($) *</label>
-            <span class="hint">Total principal requested ($500–$10,000,000).</span>
-            <input type="number" id="LoanAmount" name="LoanAmount" min="500" max="10000000" step="500" value="25000" required>
-            <span class="err-msg">Valid loan amount is required.</span>
-          </div>
-
-          <div class="field">
-            <label for="InterestRate">Interest Rate (APR %) *</label>
-            <span class="hint">Annual percentage rate (0.00%–100.00%).</span>
-            <input type="number" id="InterestRate" name="InterestRate" min="0" max="100" step="0.1" value="6.8" required>
-            <span class="err-msg">Interest rate is required.</span>
-          </div>
-
-          <div class="field">
-            <label for="LoanTerm">Loan Term (Months) *</label>
-            <span class="hint">Repayment duration schedule.</span>
-            <select id="LoanTerm" name="LoanTerm" required>
-              <option value="12">12 Months (1 Year)</option>
-              <option value="24">24 Months (2 Years)</option>
-              <option value="36" selected>36 Months (3 Years)</option>
-              <option value="48">48 Months (4 Years)</option>
-              <option value="60">60 Months (5 Years)</option>
+          <div class="form-group">
+            <label class="form-label" for="LoanPurpose">Loan Purpose *</label>
+            <select class="form-select" id="LoanPurpose" name="LoanPurpose" required>
+              <option value="Auto">Auto</option>
+              <option value="Business">Business</option>
+              <option value="Education">Education</option>
+              <option value="Home" selected>Home</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 
-          <div class="field">
-            <label for="LoanPurpose">Loan Purpose Category *</label>
-            <span class="hint">Intended disbursement objective.</span>
-            <select id="LoanPurpose" name="LoanPurpose" required>
-              <option value="Auto">Auto Purchase</option>
-              <option value="Business">Business Expansion</option>
-              <option value="Education">Education Tuition</option>
-              <option value="Home" selected>Home Improvement / Mortgaged</option>
-              <option value="Other">Other Personal</option>
-            </select>
+          <div class="form-group">
+            <label class="form-label" for="LoanTerm">Loan Term (Months) *</label>
+            <input type="number" class="form-input" id="LoanTerm" name="LoanTerm" min="1" max="600" value="36" required>
+            <span class="form-hint">Typical terms: 12, 24, 36, 48, 60</span>
           </div>
 
-          <div class="field">
-            <label>Existing Real Estate Mortgage? *</label>
-            <span class="hint">Active property lien on record.</span>
-            <div class="toggle-row">
-              <input type="radio" id="mort-no" name="HasMortgage" value="No"><label for="mort-no">No</label>
-              <input type="radio" id="mort-yes" name="HasMortgage" value="Yes" checked><label for="mort-yes">Yes</label>
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Creditworthy Co-Signer Attached? *</label>
-            <span class="hint">Secondary guarantor backing debt obligations.</span>
-            <div class="toggle-row">
-              <input type="radio" id="co-no" name="HasCoSigner" value="No" checked><label for="co-no">No</label>
-              <input type="radio" id="co-yes" name="HasCoSigner" value="Yes"><label for="co-yes">Yes</label>
-            </div>
+          <div class="form-group">
+            <label class="form-label" for="InterestRate">Interest Rate (%) *</label>
+            <input type="number" class="form-input" id="InterestRate" name="InterestRate" min="0" max="100" step="0.1" value="6.8" required>
+            <span class="form-hint">Contract annual rate percentage</span>
           </div>
         </div>
       </div>
 
-      <!-- Action Footer -->
-      <div style="display:flex; justify-content:space-between; align-items:center; padding-top:24px; border-top:1px solid var(--border); flex-wrap:wrap; gap:16px;">
-        <button type="button" class="btn-ghost" id="resetBtn">
-          Reset
-        </button>
-        <button type="button" class="btn-primary" id="runAssessmentBtn" style="padding:12px 28px; font-size:15px; display:inline-flex; align-items:center; gap:8px;">
-          <span>Run Assessment</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </button>
+      <!-- SECTION 4: Credit Risk Modifiers -->
+      <div style="margin-bottom:32px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span style="width:24px; height:24px; border-radius:50%; background:var(--brand-soft); color:var(--brand); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">4</span>
+          <h2 style="font-size:16px; font-weight:700; margin:0;">Credit Risk Modifiers</h2>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin:0 0 16px 32px;">Debt ratios, credit history depth, and collateral status.</p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; padding-left:32px;">
+          <div class="form-group">
+            <label class="form-label" for="DTIRatio">Debt-to-Income (DTI Ratio) *</label>
+            <input type="number" class="form-input" id="DTIRatio" name="DTIRatio" min="0" max="1" step="0.01" value="0.22" required>
+            <span class="form-hint">Monthly debt &divide; gross income (e.g. 0.22)</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="NumCreditLines">Number of Credit Lines *</label>
+            <input type="number" class="form-input" id="NumCreditLines" name="NumCreditLines" min="0" max="100" value="3" required>
+            <span class="form-hint">Total open trade lines & accounts</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="HasMortgage">Has Existing Mortgage *</label>
+            <select class="form-select" id="HasMortgage" name="HasMortgage" required>
+              <option value="Yes" selected>Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="HasCoSigner">Has Co-Signer *</label>
+            <select class="form-select" id="HasCoSigner" name="HasCoSigner" required>
+              <option value="No" selected>No</option>
+              <option value="Yes">Yes</option>
+            </select>
+          </div>
+        </div>
       </div>
 
+      <!-- Action Buttons -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding-top:20px; border-top:1px solid var(--border); flex-wrap:wrap; gap:12px;">
+        <button type="button" class="btn btn-secondary" id="resetBtn">
+          Reset Form
+        </button>
+
+        <button type="button" class="btn btn-primary btn-lg" id="runAssessmentBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          <span>Run ML Risk Assessment</span>
+        </button>
+      </div>
     </form>
   </div>
 
-  <!-- Loading State Container -->
-  <div id="loadingView" style="display:none;" class="card"></div>
+  <!-- Loading State View -->
+  <div id="loadingView" style="display:none; text-align:center; padding:60px 20px;">
+    <div style="width:50px; height:50px; border:3px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px;"></div>
+    <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">Evaluating Machine Learning Risk Pipeline...</div>
+    <div style="font-size:13px; color:var(--muted);" id="loadingSubtitle">Applying StandardScaler & Logistic Regression inference...</div>
+  </div>
 
-  <!-- Prediction Result Screen Container -->
-  <div id="resultView" style="display:none;"></div>
+  <!-- Dynamic Prediction Result Target View -->
+  <div id="resultView" style="display:none; margin-top:32px;"></div>
 
 </div>
 
-<%- include('../partials/footer', {
-  extraScripts: '<script src="/static/js/predict.js"></script>'
-}) %>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<%- include('../partials/footer', { extraScripts: '<script src="/static/js/predict.js"></script>' }) %>

@@ -1,0 +1,236 @@
+<%- include('../partials/header', { title: 'LoanLens — Loan Default Prediction & Risk Intelligence', crumb: '<b>Introduction</b> / Project Overview', currentPath: '/' }) %>
+
+<!-- Hero Introduction Section -->
+<section class="hero-section">
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15 8 22 9 17 14 18 21 12 17 6 21 7 14 2 9 9 8 12 2"/></svg>
+      <span>Educational ML Risk Analysis</span>
+    </div>
+
+    <h1 class="hero-title">
+      LoanLens<br>
+      <span class="hero-title-accent">Loan Default Prediction</span>
+    </h1>
+
+    <p class="hero-desc">
+      An interactive machine learning platform for analyzing borrower information and estimating loan default risk.
+    </p>
+
+    <div style="display:flex; flex-direction:column; gap:8px; font-size:14px; color:var(--text-secondary); margin:4px 0 12px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Data preprocessing & statistical outlier analysis (255,347 records)</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Exploratory data analysis & feature distribution visualizations</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Comparative 5-fold cross-validation across 4 classification models</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Interactive risk inference with explainable log-odds factor decomposition</span>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <a href="/overview" class="btn btn-primary btn-lg">
+        <span>Explore LoanLens</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="/model/comparison" class="btn btn-secondary btn-lg">
+        <span>Explore Models</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="8" r="0.6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- Pure GPU-Accelerated CSS 3D Polyhedral Risk Lattice Visual -->
+  <div class="hero-visual-container css-hero-visual" aria-label="3D Mathematical Risk Model Visualization">
+    <div class="risk-3d-scene">
+      <div class="risk-core-node"></div>
+      <div class="orbit-ring orbit-ring-1"></div>
+      <div class="orbit-ring orbit-ring-2"></div>
+      <div class="lattice-node node-1"></div>
+      <div class="lattice-node node-2"></div>
+      <div class="lattice-node node-3"></div>
+      <div class="lattice-node node-4"></div>
+      <div class="lattice-node node-5"></div>
+      <div class="lattice-node node-6"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Verified Project Metrics Grid -->
+<section style="margin-bottom:56px;">
+  <div style="margin-bottom:18px;">
+    <h2 style="font-size:20px; font-weight:700; margin:0 0 4px;">Verified Project Highlights</h2>
+    <p style="font-size:13px; color:var(--muted); margin:0;">Standardized credit modeling benchmarks evaluated on consumer credit records.</p>
+  </div>
+
+  <div class="highlights-grid">
+    <div class="stat-card">
+      <div class="stat-value">255,347</div>
+      <div class="stat-label">Dataset Records</div>
+      <span style="font-size:11px; color:var(--muted); margin-top:2px;">Clean consumer observations</span>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-value">16</div>
+      <div class="stat-label">Predictive Features</div>
+      <span style="font-size:11px; color:var(--muted); margin-top:2px;">9 numerical + 7 categorical</span>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-value">24</div>
+      <div class="stat-label">Processed Dimensions</div>
+      <span style="font-size:11px; color:var(--muted); margin-top:2px;">StandardScaler & OneHotEncoder</span>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-value">4</div>
+      <div class="stat-label">ML Benchmark Models</div>
+      <span style="font-size:11px; color:var(--muted); margin-top:2px;">5-Fold Cross-Validation splits</span>
+    </div>
+  </div>
+</section>
+
+<!-- End-to-End ML Pipeline Architecture -->
+<section style="margin-bottom:56px;">
+  <div style="margin-bottom:20px;">
+    <h2 style="font-size:20px; font-weight:700; margin:0 0 4px;">End-to-End Machine Learning Pipeline</h2>
+    <p style="font-size:13px; color:var(--muted); margin:0;">Complete data science workflow from raw Kaggle records to live risk estimation.</p>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:18px;">
+    <div class="card card-padded">
+      <div style="width:36px; height:36px; border-radius:8px; background:var(--brand-soft); color:var(--brand); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; margin-bottom:14px;">01</div>
+      <h3 style="font-size:16px; font-weight:700; margin:0 0 6px;">Data Ingestion & Cleaning</h3>
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0;">Zero duplicate records, verified data types, and IQR outlier boundaries across all 9 numerical financial dimensions.</p>
+    </div>
+
+    <div class="card card-padded">
+      <div style="width:36px; height:36px; border-radius:8px; background:var(--brand-soft); color:var(--brand); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; margin-bottom:14px;">02</div>
+      <h3 style="font-size:16px; font-weight:700; margin:0 0 6px;">Feature Pipeline</h3>
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0;">StandardScaler zero-mean unit-variance transformation and OneHotEncoder dummy feature generation.</p>
+    </div>
+
+    <div class="card card-padded">
+      <div style="width:36px; height:36px; border-radius:8px; background:var(--brand-soft); color:var(--brand); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; margin-bottom:14px;">03</div>
+      <h3 style="font-size:16px; font-weight:700; margin:0 0 6px;">5-Fold Cross-Validation</h3>
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0;">Stratified evaluation ensuring balanced model comparison across ROC-AUC, precision, recall, and F1 metrics.</p>
+    </div>
+
+    <div class="card card-padded">
+      <div style="width:36px; height:36px; border-radius:8px; background:var(--brand-soft); color:var(--brand); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; margin-bottom:14px;">04</div>
+      <h3 style="font-size:16px; font-weight:700; margin:0 0 6px;">Risk Inference & Factors</h3>
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.5; margin:0;">Posterior default probability calculation and transparent log-odds feature attribution for every borrower assessment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Model Benchmark Showcase -->
+<section style="margin-bottom:56px;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+    <div>
+      <h2 style="font-size:20px; font-weight:700; margin:0 0 4px;">Evaluated Classification Models</h2>
+      <p style="font-size:13px; color:var(--muted); margin:0;">Benchmarked on 255k records with 5-fold stratified cross-validation.</p>
+    </div>
+    <a href="/model/comparison" style="font-size:13px; font-weight:600; color:var(--brand); display:flex; align-items:center; gap:6px;">
+      <span>View Detailed Comparison Matrix</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:18px;">
+    <!-- Model 1: Production Logistic Regression -->
+    <div class="card card-padded" style="border-color:var(--brand); background:var(--brand-soft);">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <span class="badge badge-brand">Active Production Model</span>
+        <span style="font-size:11px; font-weight:700; color:var(--brand);">0.7532 ROC-AUC</span>
+      </div>
+      <h3 style="font-size:17px; font-weight:700; margin:0 0 6px; color:var(--text);">Logistic Regression</h3>
+      <p style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin:0 0 16px;">
+        Selected production model delivering 69.95% default recall with full log-odds mathematical explainability.
+      </p>
+      <div style="border-top:1px solid color-mix(in srgb, var(--brand) 25%, transparent); padding-top:10px; font-size:12px; display:flex; justify-content:space-between; color:var(--text);">
+        <span>Default Recall: <b>69.95%</b></span>
+        <span>CV AUC: <b>0.7426</b></span>
+      </div>
+    </div>
+
+    <!-- Model 2: KNN -->
+    <div class="card card-padded">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <span class="badge" style="background:var(--panel-2); color:var(--muted); border:1px solid var(--border);">Benchmark Only</span>
+        <span style="font-size:11px; font-weight:600; color:var(--muted);">0.6927 ROC-AUC</span>
+      </div>
+      <h3 style="font-size:17px; font-weight:700; margin:0 0 6px; color:var(--text);">K-Nearest Neighbors</h3>
+      <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0 0 16px;">
+        Distance-weighted instance learning with k=25 neighbors evaluating local metric neighborhoods.
+      </p>
+      <div style="border-top:1px solid var(--border); padding-top:10px; font-size:12px; display:flex; justify-content:space-between; color:var(--muted);">
+        <span>Default Recall: <b>0.70%</b></span>
+        <span>CV AUC: <b>0.6753</b></span>
+      </div>
+    </div>
+
+    <!-- Model 3: Naive Bayes -->
+    <div class="card card-padded">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <span class="badge" style="background:var(--panel-2); color:var(--muted); border:1px solid var(--border);">Benchmark Only</span>
+        <span style="font-size:11px; font-weight:600; color:var(--muted);">0.7499 ROC-AUC</span>
+      </div>
+      <h3 style="font-size:17px; font-weight:700; margin:0 0 6px; color:var(--text);">Gaussian Naive Bayes</h3>
+      <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0 0 16px;">
+        Probabilistic conditional independence benchmark with variance smoothing (var_smoothing=1e-5).
+      </p>
+      <div style="border-top:1px solid var(--border); padding-top:10px; font-size:12px; display:flex; justify-content:space-between; color:var(--muted);">
+        <span>Default Recall: <b>2.56%</b></span>
+        <span>CV AUC: <b>0.7396</b></span>
+      </div>
+    </div>
+
+    <!-- Model 4: Decision Tree -->
+    <div class="card card-padded">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <span class="badge" style="background:var(--panel-2); color:var(--muted); border:1px solid var(--border);">Benchmark Only</span>
+        <span style="font-size:11px; font-weight:600; color:var(--muted);">0.7254 ROC-AUC</span>
+      </div>
+      <h3 style="font-size:17px; font-weight:700; margin:0 0 6px; color:var(--text);">Decision Tree</h3>
+      <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0 0 16px;">
+        Non-linear recursive entropy partitioning with max_depth=6 for structural rule comparison.
+      </p>
+      <div style="border-top:1px solid var(--border); padding-top:10px; font-size:12px; display:flex; justify-content:space-between; color:var(--muted);">
+        <span>Default Recall: <b>3.02%</b></span>
+        <span>CV AUC: <b>0.7036</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Verified Technology Stack -->
+<section style="margin-bottom:40px;">
+  <div style="margin-bottom:16px;">
+    <h2 style="font-size:20px; font-weight:700; margin:0 0 4px;">Verified Technology Stack</h2>
+    <p style="font-size:13px; color:var(--muted); margin:0;">Core technologies powering the full-stack machine learning architecture.</p>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:10px;">
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">Python 3.11</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">Scikit-learn 1.6.1</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">NumPy</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">Pandas</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">Flask</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">Node.js</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">Express.js</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">EJS (SSR)</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">Modern CSS3</span>
+    <span class="btn btn-secondary" style="font-size:13px; font-weight:500; padding:6px 14px; cursor:default;">Chart.js</span>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

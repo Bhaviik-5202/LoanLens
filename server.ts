@@ -113,8 +113,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // ─── Frontend Page Routes ─────────────────────────────────────────────────────
 
-// Page 1: Overview
-app.get(['/', '/overview', '/dashboard'], async (req: Request, res: Response) => {
+// Introduction / Landing Page (GET /)
+app.get('/', async (req: Request, res: Response) => {
+  res.render('pages/landing');
+});
+
+// Page 1: Overview Dashboard (GET /overview, GET /dashboard)
+app.get(['/overview', '/dashboard'], async (req: Request, res: Response) => {
   const applications = getPredictions();
   const selectedModel = await modelService.getSelectedModel();
   const accuracyPct = Math.round(selectedModel.metrics.accuracy * 1000) / 10;

@@ -1,20 +1,22 @@
 /**
  * LoanLens — Assessment Form & Result Controller
- * Manages form validation, preset loading, simulation through prediction service abstraction, and rendering result UI.
+ * Manages form validation, preset loading, honest model selector, and dynamic result rendering.
  */
 
 (function () {
+  'use strict';
+
   const form = document.getElementById("assessmentForm");
   const runBtn = document.getElementById("runAssessmentBtn");
   const resetBtn = document.getElementById("resetBtn");
   const loadingView = document.getElementById("loadingView");
   const resultView = document.getElementById("resultView");
-  const formCard = document.getElementById("formCard");
+  const benchmarkNotice = document.getElementById("benchmarkNotice");
+  const benchmarkNoticeText = document.getElementById("benchmarkNoticeText");
 
-  // Sample Presets for easy reviewer testing
+  // Verified 16-feature Presets (No decorative Name field)
   const presets = {
     prime: {
-      Name: "Eleanor Vance",
       Age: 42,
       Education: "Master's",
       MaritalStatus: "Married",
@@ -33,293 +35,271 @@
       HasCoSigner: "No",
     },
     moderate: {
-      Name: "Marcus Sterling",
       Age: 32,
       Education: "Bachelor's",
       MaritalStatus: "Single",
-      HasDependents: "Yes",
+      HasDependents: "No",
       EmploymentType: "Full-time",
-      MonthsEmployed: 26,
-      Income: 58000,
-      CreditScore: 660,
-      NumCreditLines: 2,
-      DTIRatio: 0.38,
-      LoanAmount: 18000,
-      InterestRate: 13.5,
+      MonthsEmployed: 24,
+      Income: 62000,
+      CreditScore: 650,
+      NumCreditLines: 6,
+      DTIRatio: 0.34,
+      LoanAmount: 35000,
+      InterestRate: 11.5,
       LoanTerm: 48,
       LoanPurpose: "Auto",
       HasMortgage: "No",
       HasCoSigner: "No",
     },
     subprime: {
-      Name: "Jordan Hayes",
-      Age: 23,
+      Age: 26,
       Education: "High School",
-      MaritalStatus: "Divorced",
+      MaritalStatus: "Single",
       HasDependents: "Yes",
       EmploymentType: "Part-time",
       MonthsEmployed: 8,
-      Income: 28000,
+      Income: 35000,
       CreditScore: 540,
-      NumCreditLines: 4,
-      DTIRatio: 0.62,
-      LoanAmount: 35000,
-      InterestRate: 21.5,
+      NumCreditLines: 9,
+      DTIRatio: 0.46,
+      LoanAmount: 48000,
+      InterestRate: 18.2,
       LoanTerm: 60,
-      LoanPurpose: "Business",
+      LoanPurpose: "Other",
       HasMortgage: "No",
       HasCoSigner: "No",
-    },
+    }
   };
 
-  // Wire presets buttons
+  // Quick Preset Loader
   document.querySelectorAll("[data-preset]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const key = btn.dataset.preset;
-      const data = presets[key];
+      const type = btn.getAttribute("data-preset");
+      const data = presets[type];
       if (!data) return;
 
-      Object.entries(data).forEach(([field, val]) => {
-        const input = form.elements[field];
-        if (!input) return;
-        if (input instanceof RadioNodeList || input.type === "radio") {
-          const radio = form.querySelector(`input[name="${field}"][value="${val}"]`);
-          if (radio) radio.checked = true;
-        } else {
-          input.value = val;
-        }
+      Object.entries(data).forEach(([key, val]) => {
+        const el = document.getElementById(key);
+        if (el) el.value = val;
       });
-
-      // Clear previous validation errors
-      form.querySelectorAll(".field.err").forEach((el) => el.classList.remove("err"));
     });
   });
 
-  function validateForm() {
-    let isValid = true;
-    const requiredInputs = form.querySelectorAll("input[required], select[required]");
-    requiredInputs.forEach((el) => {
-      const field = el.closest(".field");
-      if (!el.value || el.value.trim() === "") {
-        if (field) field.classList.add("err");
-        isValid = false;
+  // Honest Model Selector Interaction
+  const modelCards = document.querySelectorAll(".model-option-card");
+  modelCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      const modelId = card.getAttribute("data-model");
+
+      if (modelId === "logistic_regression") {
+        if (benchmarkNotice) benchmarkNotice.style.display = "none";
       } else {
-        if (field) field.classList.remove("err");
+        const names = {
+          knn: "K-Nearest Neighbors (k=25)",
+          naive_bayes: "Gaussian Naive Bayes",
+          decision_tree: "Decision Tree (max_depth=6)"
+        };
+        const mName = names[modelId] || modelId;
+        if (benchmarkNotice && benchmarkNoticeText) {
+          benchmarkNoticeText.innerHTML = `<strong>${mName}</strong> is an evaluated benchmark baseline. Live scoring is designated to <strong>Logistic Regression</strong> for optimal recall (69.95%) and factor transparency.`;
+          benchmarkNotice.style.display = "block";
+        }
       }
     });
+  });
 
-    return isValid;
+  // Reset Button
+  if (resetBtn && form) {
+    resetBtn.addEventListener("click", () => {
+      form.reset();
+      if (resultView) resultView.style.display = "none";
+      if (benchmarkNotice) benchmarkNotice.style.display = "none";
+    });
   }
 
-  const loadingSteps = [
-    "Validating borrower credentials and limits...",
-    "Applying StandardScaler normalization ($\mu=0, \sigma=1$)...",
-    "Encoding categorical features into 24 model inputs...",
-    "Querying HistGradientBoosting ensemble probability...",
-    "Calculating Shapley/Permutation factor attributions...",
-    "Synthesizing institutional underwriting recommendations...",
-  ];
+  // Submit Assessment Form
+  if (runBtn && form) {
+    runBtn.addEventListener("click", async () => {
+      const formData = new FormData(form);
+      const payload = {};
 
-  function runAssessment() {
-    if (!validateForm()) {
-      const firstErr = form.querySelector(".field.err");
-      if (firstErr) firstErr.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-
-    const formData = new FormData(form);
-    const payload = Object.fromEntries(formData.entries());
-
-    // Show loading view
-    formCard.style.display = "none";
-    resultView.style.display = "none";
-    loadingView.style.display = "block";
-    loadingView.scrollIntoView({ behavior: "smooth", block: "start" });
-
-    loadingView.innerHTML = `
-      <div style="text-align:center; padding:50px 20px;">
-        <div class="analysis-ring" style="width:68px; height:68px; margin:0 auto 20px;">
-          <svg width="68" height="68" viewBox="0 0 76 76">
-            <circle cx="38" cy="38" r="32" fill="none" stroke="var(--border)" stroke-width="5"/>
-            <circle cx="38" cy="38" r="32" fill="none" stroke="var(--brand)" stroke-width="5" stroke-linecap="round" stroke-dasharray="140 200"/>
-          </svg>
-        </div>
-        <h3 style="font-size:18px; font-weight:700; margin:0 0 6px;">Analyzing borrower profile...</h3>
-        <p style="font-size:13px; color:var(--muted); margin:0 0 24px;">Running calibrated inference against 255,347 baseline lending records</p>
-        <div class="analysis-lines" style="max-width:380px; margin:0 auto;">
-          ${loadingSteps.map((txt, i) => `<div class="analysis-line" id="load-step-${i}"><span class="chk"></span>${txt}</div>`).join("")}
-        </div>
-      </div>
-    `;
-
-    let stepIdx = 0;
-    const interval = setInterval(() => {
-      if (stepIdx > 0) {
-        const prev = document.getElementById(`load-step-${stepIdx - 1}`);
-        if (prev) prev.classList.add("done");
+      for (const [key, val] of formData.entries()) {
+        payload[key] = val;
       }
-      if (stepIdx >= loadingSteps.length) {
-        clearInterval(interval);
-        submitPayload(payload);
-        return;
-      }
-      stepIdx++;
-    }, 280);
-  }
 
-  function submitPayload(payload) {
-    fetch("/api/predict", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Assessment failed");
-        return data;
-      })
-      .then(renderResultUI)
-      .catch((err) => {
-        loadingView.style.display = "none";
-        formCard.style.display = "block";
-        alert("Assessment error: " + err.message);
+      // Convert numeric fields
+      const numKeys = ["Age", "Income", "LoanAmount", "CreditScore", "MonthsEmployed", "NumCreditLines", "InterestRate", "LoanTerm", "DTIRatio"];
+      numKeys.forEach((k) => {
+        if (payload[k] !== undefined && payload[k] !== "") {
+          payload[k] = parseFloat(payload[k]);
+        }
       });
+
+      // Show Loading State
+      if (loadingView) loadingView.style.display = "block";
+      if (resultView) resultView.style.display = "none";
+      loadingView.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      try {
+        const response = await fetch("/api/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.message || `Assessment error: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        renderResult(result);
+      } catch (err) {
+        if (loadingView) loadingView.style.display = "none";
+        alert(`Prediction Error: ${err.message}`);
+      }
+    });
   }
 
-  function renderResultUI(res) {
-    loadingView.style.display = "none";
+  // Dynamic Result Renderer
+  function renderResult(res) {
+    if (loadingView) loadingView.style.display = "none";
+    if (!resultView) return;
+
     resultView.style.display = "block";
     resultView.scrollIntoView({ behavior: "smooth", block: "start" });
 
-    const isHigh = res.risk_level === "High";
-    const isMed = res.risk_level === "Medium";
-    const colorVar = isHigh ? "var(--high)" : isMed ? "var(--med)" : "var(--low)";
-    const badgeClass = isHigh ? "high" : isMed ? "med" : "low";
+    const probVal = typeof res.probability === "number" 
+      ? (res.probability <= 1 ? res.probability * 100 : res.probability) 
+      : 15;
+    const probDisplay = probVal.toFixed(2);
+    const riskScore = typeof res.risk_score === "number" ? res.risk_score : 85;
+    const confidencePct = typeof res.confidence === "number" ? (res.confidence * 100).toFixed(1) : "85";
 
-    const probPct = typeof res.probability === "number" && res.probability <= 1.0 
-      ? Math.round(res.probability * 1000) / 10 
-      : (typeof res.probability === "number" ? res.probability : 24.0);
+    const isLow = res.risk_level === "Low";
+    const isMed = res.risk_level === "Medium";
+    const badgeClass = isLow ? "badge-low" : isMed ? "badge-med" : "badge-high";
+    const gaugeColor = isLow ? "var(--low)" : isMed ? "var(--med)" : "var(--high)";
+
     const circ = 2 * Math.PI * 54;
-    const offset = circ * (1 - probPct / 100);
-    const predTitle = typeof res.prediction === "number" 
-      ? (res.prediction === 1 ? "Likely to Default" : "Likely to Repay") 
-      : (res.prediction || "Assessment Complete");
+    const offset = circ * (1 - Math.min(100, Math.max(0, probVal)) / 100);
+
+    const protective = (res.factors || []).filter(f => f.direction === "down" || (typeof f.raw_impact === "number" && f.raw_impact <= 0));
+    const amplifiers = (res.factors || []).filter(f => f.direction === "up" || (typeof f.raw_impact === "number" && f.raw_impact > 0));
 
     resultView.innerHTML = `
-      <div class="card" style="padding:32px; box-shadow:var(--shadow-2);">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:20px; padding-bottom:24px; border-bottom:1px solid var(--border); margin-bottom:28px;">
+      <div class="result-container">
+        <!-- Top Score & Gauge Card -->
+        <div class="card gauge-card">
           <div>
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
               <span class="badge ${badgeClass}" style="font-size:12px; font-weight:700; padding:6px 14px;">
-                RISK LEVEL: ${res.risk_level.toUpperCase()}
+                PREDICTED RISK LEVEL: ${(res.risk_level || "UNKNOWN").toUpperCase()}
               </span>
               <span style="font-size:12px; color:var(--muted);">
-                Model: <b>${res.model_used}</b>
+                Model: <b>${res.model_used || "Logistic Regression"}</b>
               </span>
             </div>
-            <h2 style="font-size:28px; font-weight:700; margin:0 0 6px; letter-spacing:-0.01em;">
-              ${predTitle}
+
+            <h2 style="font-size:26px; font-weight:700; margin:0 0 6px; color:var(--text);">
+              ${res.prediction === 1 ? "Predicted Risk: Default" : "Predicted Risk: No Default"}
             </h2>
-            <p style="font-size:14px; color:var(--muted); margin:0;">
-              Classification Label: <strong style="color:var(--text);">${res.label}</strong> &middot; Default Probability: <strong>${probPct}%</strong> &middot; Confidence: <strong>${Math.round(res.confidence * 100)}%</strong>
+
+            <p style="font-size:13px; color:var(--muted); margin:0;">
+              Model Classification: <strong style="color:var(--text);">${res.label}</strong> &middot; Default Probability: <strong>${probDisplay}%</strong> &middot; Confidence: <strong>${confidencePct}%</strong>
             </p>
           </div>
 
-          <div style="display:flex; align-items:center; gap:24px;">
-            <div style="position:relative; width:110px; height:110px; display:flex; align-items:center; justify-content:center;">
-              <svg width="110" height="110" viewBox="0 0 130 130">
-                <circle cx="65" cy="65" r="54" fill="none" stroke="var(--border)" stroke-width="10"/>
-                <circle cx="65" cy="65" r="54" fill="none" stroke="${colorVar}" stroke-width="10" stroke-linecap="round"
-                  stroke-dasharray="${circ}" stroke-dashoffset="${offset}" transform="rotate(-90 65 65)"
-                  style="transition: stroke-dashoffset 1s ease;"/>
-              </svg>
-              <div style="position:absolute; text-align:center;">
-                <div style="font-size:22px; font-weight:700; line-height:1;">${probPct}%</div>
-                <div style="font-size:9px; color:var(--muted); text-transform:uppercase; margin-top:2px;">Probability</div>
-              </div>
-            </div>
-
-            <div style="border-left:1px solid var(--border); padding-left:20px;">
-              <div style="font-size:32px; font-weight:700; color:var(--text); line-height:1;">
-                ${res.risk_score}<span style="font-size:16px; color:var(--muted); font-weight:500;">/100</span>
-              </div>
-              <div style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--muted); margin-top:4px;">
-                Risk Score
-              </div>
+          <div class="gauge-visual">
+            <svg class="gauge-svg" viewBox="0 0 130 130">
+              <circle class="gauge-bg-circle" cx="65" cy="65" r="54" />
+              <circle class="gauge-val-circle" cx="65" cy="65" r="54" 
+                      stroke="${gaugeColor}"
+                      stroke-dasharray="${circ}" 
+                      stroke-dashoffset="${offset}" />
+            </svg>
+            <div class="gauge-center-text">
+              <div class="gauge-score-number">${riskScore}</div>
+              <div class="gauge-score-label">Risk Score</div>
             </div>
           </div>
         </div>
 
-        <!-- Why this prediction? Section -->
-        <div style="margin-bottom:28px;">
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
-            <h3 style="font-size:17px; font-weight:700; margin:0;">Why this prediction?</h3>
-            <span style="font-size:12px; color:var(--muted);">Evaluated against prime lending thresholds</span>
+        <!-- Explainable Model Factors (Partitioned) -->
+        <div class="card card-padded">
+          <div style="margin-bottom:16px;">
+            <h3 style="font-size:16px; font-weight:700; margin:0 0 4px;">Explainable Model Factors</h3>
+            <p style="font-size:12px; color:var(--muted); margin:0;">
+              Individual log-odds coefficient impact assessed by the Logistic Regression scoring engine.
+            </p>
           </div>
 
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:14px;">
-            ${res.factors.map((f) => `
-              <div style="padding:14px 16px; background:var(--surface); border:1px solid var(--border); border-radius:10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <span style="font-size:13px; font-weight:600; color:var(--text);">${f.label}</span>
-                  <span style="font-size:11px; font-weight:700; color:${f.direction === 'up' ? 'var(--high)' : 'var(--low)'};">
-                    ${f.direction === 'up' ? '&uarr; Risk Driver' : '&darr; Protective'}
-                  </span>
-                </div>
-                <div style="height:6px; background:var(--border); border-radius:999px; overflow:hidden; margin-bottom:8px;">
-                  <div style="height:100%; border-radius:999px; width:${f.impact}%; background:${f.direction === 'up' ? 'var(--high)' : 'var(--low)'};"></div>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--muted);">
-                  <span>Recorded: <b>${f.value}</b></span>
-                  <span>Benchmark: <b>${f.benchmark}</b></span>
-                </div>
-                <div style="font-size:11px; color:var(--muted); margin-top:4px;">${f.desc}</div>
+          <div class="factors-layout">
+            <!-- Protective Mitigants -->
+            <div class="factor-column-card">
+              <div class="factor-col-title" style="color:var(--low);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Protective Mitigants (Decreases Default Risk)</span>
               </div>
-            `).join("")}
+
+              ${protective.length > 0 ? protective.map(f => `
+                <div class="factor-item">
+                  <div class="factor-top-row">
+                    <span class="factor-name">${f.label || f.feature}</span>
+                    <span class="factor-impact-badge" style="background:var(--low-soft); color:var(--low);">
+                      ${f.raw_impact ? f.raw_impact.toFixed(3) : f.impact}% log-odds
+                    </span>
+                  </div>
+                  <div class="impact-bar-bg">
+                    <div class="impact-bar-fill" style="width:${Math.min(100, Math.abs(f.impact || 40))}%; background:var(--low);"></div>
+                  </div>
+                  <div style="font-size:11px; color:var(--muted);">${f.desc}</div>
+                </div>
+              `).join("") : '<div style="font-size:12px; color:var(--muted); padding:10px 0;">No strong protective factors identified.</div>'}
+            </div>
+
+            <!-- Risk Amplifiers -->
+            <div class="factor-column-card">
+              <div class="factor-col-title" style="color:var(--high);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                <span>Risk Amplifiers (Increases Default Risk)</span>
+              </div>
+
+              ${amplifiers.length > 0 ? amplifiers.map(f => `
+                <div class="factor-item">
+                  <div class="factor-top-row">
+                    <span class="factor-name">${f.label || f.feature}</span>
+                    <span class="factor-impact-badge" style="background:var(--high-soft); color:var(--high);">
+                      ${f.raw_impact ? '+' + f.raw_impact.toFixed(3) : '+' + f.impact}% log-odds
+                    </span>
+                  </div>
+                  <div class="impact-bar-bg">
+                    <div class="impact-bar-fill" style="width:${Math.min(100, Math.abs(f.impact || 40))}%; background:var(--high);"></div>
+                  </div>
+                  <div style="font-size:11px; color:var(--muted);">${f.desc}</div>
+                </div>
+              `).join("") : '<div style="font-size:12px; color:var(--muted); padding:10px 0;">No strong risk-amplifying drivers identified.</div>'}
+            </div>
           </div>
         </div>
 
-        <!-- Model Output & Educational Guidance -->
-        <div style="background:color-mix(in srgb, var(--brand) 8%, var(--panel)); border:1px solid color-mix(in srgb, var(--brand) 25%, transparent); border-radius:12px; padding:20px; margin-bottom:28px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span style="font-size:14px; font-weight:700; color:var(--brand);">${res.recommendation.action}</span>
+        <!-- Model Result Interpretation -->
+        ${res.recommendation ? `
+          <div class="card card-padded" style="background:var(--brand-soft); border-color:color-mix(in srgb, var(--brand) 25%, transparent);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span style="font-size:14px; font-weight:700; color:var(--brand);">${res.recommendation.action}</span>
+            </div>
+            <ul style="margin:0; padding-left:20px; font-size:13px; color:var(--text); line-height:1.7;">
+              ${(res.recommendation.points || []).map(p => `<li>${p}</li>`).join("")}
+            </ul>
+            <div style="margin-top:12px; padding-top:10px; border-top:1px dashed color-mix(in srgb, var(--brand) 20%, transparent); font-size:11px; color:var(--muted);">
+              <em>Notice: This evaluation is an educational machine learning model simulation based on public benchmark data and is not an actual commercial lending or underwriting decision.</em>
+            </div>
           </div>
-          <ul style="margin:0; padding-left:20px; font-size:13px; color:var(--text); line-height:1.7;">
-            ${res.recommendation.points.map((p) => `<li>${p}</li>`).join("")}
-          </ul>
-          <div style="margin-top:12px; padding-top:10px; border-top:1px dashed color-mix(in srgb, var(--brand) 20%, transparent); font-size:11px; color:var(--muted);">
-            <em>Notice: This evaluation is an educational machine learning model simulation based on public benchmark data and is not an actual commercial lending or underwriting decision.</em>
-          </div>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
-          <a href="/predictions" class="btn-ghost" style="font-size:13px;">View in Prediction History &rarr;</a>
-          <button type="button" class="btn-primary" id="anotherAssessmentBtn" style="padding:10px 20px;">
-            Run Another Assessment
-          </button>
-        </div>
+        ` : ''}
       </div>
     `;
-
-    document.getElementById("anotherAssessmentBtn").addEventListener("click", () => {
-      resultView.style.display = "none";
-      formCard.style.display = "block";
-      formCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
   }
-
-  if (runBtn) runBtn.addEventListener("click", runAssessment);
-  if (resetBtn) {
-    resetBtn.addEventListener("click", () => {
-      form.reset();
-      form.querySelectorAll(".field.err").forEach((el) => el.classList.remove("err"));
-    });
-  }
-
-  window.resetAssessmentForm = function () {
-    resultView.style.display = "none";
-    formCard.style.display = "block";
-    formCard.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 })();

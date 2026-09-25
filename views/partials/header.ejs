@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><%= typeof title !== 'undefined' ? title : 'Loan Default Prediction — Institutional Credit Risk Scoring Engine' %></title>
-<meta name="description" content="Institutional Credit Risk Scoring Engine with interactive borrower risk assessment, ML benchmark analytics, and simulation.">
-<meta property="og:title" content="<%= typeof title !== 'undefined' ? title : 'Loan Default Prediction — Institutional Credit Risk Scoring Engine' %>">
-<meta property="og:description" content="Institutional Credit Risk Scoring Engine with interactive borrower risk assessment, ML benchmark analytics, and simulation.">
+<title><%= typeof title !== 'undefined' ? title : 'LoanLens — Loan Default Prediction & Risk Intelligence' %></title>
+<meta name="description" content="Interactive machine learning platform for loan default risk prediction, model comparison, and exploratory data analysis.">
+<meta property="og:title" content="<%= typeof title !== 'undefined' ? title : 'LoanLens — Loan Default Prediction & Risk Intelligence' %>">
+<meta property="og:description" content="Interactive machine learning platform for loan default risk prediction, model comparison, and exploratory data analysis.">
 <link rel="stylesheet" href="/static/css/app.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
   (function () {
-    var saved = localStorage.getItem('loanlens-theme') || localStorage.getItem('loanml-theme') || 'light';
+    var saved = localStorage.getItem('loanlens-theme') || 'light';
     document.documentElement.setAttribute('data-theme', saved);
   })();
 </script>
@@ -20,78 +20,84 @@
 
 <a class="skip-link" href="#main-content">Skip to main content</a>
 
-<div class="shell">
+<!-- Mobile Drawer Backdrop Overlay -->
+<div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
 
-  <div class="sb-backdrop" id="sbBackdrop" hidden></div>
+<div class="app-shell">
 
-  <aside class="sidebar" id="sidebar" aria-label="Primary">
-    <a class="sb-head" href="/overview">
-      <div class="sb-logo-icon" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M9 12c1.5 2 4.5 2 6 0"/>
-          <path d="M12 7v1"/>
-        </svg>
-      </div>
-      <div class="sb-brand-text">
-        <span class="sb-brand-name">LoanLens</span>
-        <span class="sb-brand-sub">RISK INTELLIGENCE</span>
-      </div>
-    </a>
-
-    <nav class="sb-nav">
-      <% for (const group of nav) { %>
-      <div class="sb-group">
-        <div class="sb-group-label"><%= group.group %></div>
-        <% for (const item of group.items) { %>
-        <a class="sb-item <%= currentPath === item.route || (item.route === '/overview' && currentPath === '/') || (item.route === '/assess' && currentPath === '/predict') ? 'active' : '' %>" href="<%= item.route %>" <% if (currentPath === item.route) { %>aria-current="page"<% } %>>
-          <%- icon(item.icon) %>
-          <span><%= item.label %></span>
-          <% if (currentPath === item.route || (item.route === '/overview' && currentPath === '/') || (item.route === '/assess' && currentPath === '/predict')) { %>
-            <span class="active-dot" aria-hidden="true"></span>
-          <% } %>
-          <% if (item.status === 'soon') { %><span class="soon">Soon</span><% } %>
-        </a>
-        <% } %>
-      </div>
-      <% } %>
-    </nav>
-
-    <div class="sidebar-bottom">
-      <div class="api-service-card">
-        <div class="api-service-head">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2 8 4-16 2 8h6"/></svg>
-          <span>API Service</span>
+  <!-- Unified Navigation Sidebar (Desktop Fixed + Mobile Slide-In Drawer) -->
+  <aside class="app-sidebar" id="appSidebar" aria-label="Primary Navigation">
+    <div class="sb-brand">
+      <a href="/overview" style="display:flex; align-items:center; gap:12px; text-decoration:none;">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
         </div>
-        <div class="api-service-status">
-          <span class="live-pulse-dot" aria-hidden="true"></span>
-          <span>Status: Ready</span>
+        <div class="brand-text">
+          <span class="brand-name">LoanLens</span>
+          <span class="brand-badge">ML Risk Platform</span>
         </div>
-      </div>
-
-      <a href="/overview" class="reviewer-link">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <span>Reviewer Workspace</span>
       </a>
+      <button type="button" class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close navigation menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="sb-nav-container">
+      <% if (typeof nav !== 'undefined') { %>
+        <% for (const group of nav) { %>
+          <div class="nav-section">
+            <div class="nav-section-title"><%= group.group %></div>
+            <ul class="nav-list">
+              <% for (const item of group.items) { %>
+                <li>
+                  <a class="nav-link <%= currentPath === item.route || (item.route === '/overview' && currentPath === '/') || (item.route === '/assess' && currentPath === '/predict') ? 'active' : '' %>" 
+                     href="<%= item.route %>"
+                     <% if (currentPath === item.route) { %>aria-current="page"<% } %>>
+                    <%- icon(item.icon) %>
+                    <span><%= item.label %></span>
+                  </a>
+                </li>
+              <% } %>
+            </ul>
+          </div>
+        <% } %>
+      <% } %>
+    </div>
+
+    <div class="sb-footer">
+      <div class="system-status-chip">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span style="font-weight:600;">ML Engine: Ready</span>
+      </div>
+      <div style="font-size:11px; color:var(--muted); text-align:center;">
+        v1.0 &middot; Logistic Regression
+      </div>
     </div>
   </aside>
 
-  <div class="main">
-    <div class="topbar">
-      <div style="display:flex;align-items:center;gap:var(--space-4)">
-        <button class="icon-btn sb-toggle" id="sbToggle" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"><%- icon('menu') %></button>
-        <div class="topbar-pill">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="15"/></svg>
-          <span>Student ML project / lending risk review</span>
+  <!-- Main View Container -->
+  <div class="app-main">
+    
+    <!-- Topbar Header -->
+    <header class="app-topbar">
+      <div class="topbar-left">
+        <button type="button" class="menu-toggle-btn" id="mobileMenuBtn" aria-label="Open navigation menu" aria-expanded="false" aria-controls="appSidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-crumb">
+          <%- typeof crumb !== 'undefined' ? crumb : '<b>Workspace</b> / Overview' %>
         </div>
       </div>
-      <div class="topbar-actions">
-        <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle color theme"></button>
-        <a class="btn-primary" href="/assess" style="display:inline-flex;align-items:center;gap:6px;">
-          <span>Run assessment</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-        </a>
-      </div>
-    </div>
 
-    <div class="page-body" id="main-content" tabindex="-1">
+      <div class="topbar-right">
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle visual theme">
+          <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <span class="theme-text">Theme</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Injection Target -->
+    <main id="main-content" class="content-wrapper">
