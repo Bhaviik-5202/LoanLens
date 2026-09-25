@@ -21,7 +21,7 @@ import { normalizePayload, validatePredictionPayload, predictLoanRisk } from './
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.basename(__dirname) === 'dist' ? path.resolve(__dirname, '..') : __dirname;
+const projectRoot = process.env.VERCEL ? process.cwd() : (path.basename(__dirname) === 'dist' ? path.resolve(__dirname, '..') : __dirname);
 
 // Ensure remote backend environment configuration is active as required
 process.env.USE_REMOTE_BACKEND = process.env.USE_REMOTE_BACKEND || 'true';
@@ -66,7 +66,9 @@ function ensureFlaskBackend(): void {
     });
 }
 
-ensureFlaskBackend();
+if (!process.env.VERCEL) {
+  ensureFlaskBackend();
+}
 
 process.on('SIGINT', () => {
   flaskProcess?.kill();
@@ -311,6 +313,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
 
-app.listen(PORT, HOST, () => {
-  console.log(`LoanLens server running on http://${HOST}:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, HOST, () => {
+    console.log(`LoanLens server running on http://${HOST}:${PORT}`);
+  });
+}
+
+export default app;
+export { app };
