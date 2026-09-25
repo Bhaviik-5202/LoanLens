@@ -5,7 +5,7 @@
  */
 
 import { ModelSpecification } from '../types/index.js';
-import { DEV_EVALUATED_MODELS, DEV_ROC_CURVES } from '../data/developmentMockData.js';
+import { DEV_EVALUATED_MODELS, DEV_ROC_CURVES } from '../lib/data/developmentMockData.js';
 
 export class ModelService {
   private get useRemoteApi(): boolean {

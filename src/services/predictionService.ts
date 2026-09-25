@@ -5,8 +5,8 @@
  */
 
 import { BorrowerAssessmentInput, PredictionResult } from '../types/index.js';
-import { predictLoanRisk as runCalibratedInference } from '../mlService.js';
-import { recordPrediction } from '../store.js';
+import { predictLoanRisk as runCalibratedInference } from '../lib/mlService.js';
+import { recordPrediction } from '../lib/store.js';
 
 export class PredictionService {
   private get useRemoteApi(): boolean {

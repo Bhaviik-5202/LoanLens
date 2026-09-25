@@ -7,17 +7,17 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn, ChildProcess } from 'child_process';
 import express, { Request, Response, NextFunction } from 'express';
-import { NAV } from './src/constants.js';
-import { icon } from './src/icons.js';
+import { NAV } from './src/lib/constants.js';
+import { icon } from './src/lib/icons.js';
 import {
   getPredictions,
   getDashboardStats,
   getPredictionTrend,
-} from './src/store.js';
+} from './src/lib/store.js';
 import { predictionService } from './src/services/predictionService.js';
 import { modelService } from './src/services/modelService.js';
 import { analyticsService } from './src/services/analyticsService.js';
-import { normalizePayload, validatePredictionPayload, predictLoanRisk } from './src/mlService.js';
+import { normalizePayload, validatePredictionPayload, predictLoanRisk } from './src/lib/mlService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -119,30 +119,30 @@ app.get(['/', '/overview', '/dashboard'], async (req: Request, res: Response) =>
   const trend = getPredictionTrend(applications);
   const recent = applications.slice(0, 8);
 
-  res.render('dashboard', { stats, trend, recent });
+  res.render('pages/dashboard', { stats, trend, recent });
 });
 
 // Page 2: New Assessment Form
 app.get(['/assess', '/predict'], (req: Request, res: Response) => {
-  res.render('predict');
+  res.render('pages/predict');
 });
 
 // Page 3: Model Context
 app.get('/model/context', async (req: Request, res: Response) => {
   const context = await modelService.getModelContext();
-  res.render('model_context', { context });
+  res.render('pages/model_context', { context });
 });
 
 // Page 4: Model Comparison
 app.get(['/model/comparison', '/model/analytics'], async (req: Request, res: Response) => {
   const { models, rocCurves } = await modelService.getModelComparison();
-  res.render('model_comparison', { models, rocCurves });
+  res.render('pages/model_comparison', { models, rocCurves });
 });
 
 // Page 5: Data Insights
 app.get(['/data/insights', '/dataset/explorer'], async (req: Request, res: Response) => {
   const insights = await analyticsService.getDataInsights();
-  res.render('data_insights', { insights });
+  res.render('pages/data_insights', { insights });
 });
 
 // Page 6: Model Details
@@ -151,17 +151,17 @@ app.get('/model/details', async (req: Request, res: Response) => {
   const requestedId = typeof req.query.model === 'string' ? req.query.model : 'logistic-regression';
   const currentModel = (await modelService.getModelById(requestedId)) || allModels[0];
 
-  res.render('model_details', { allModels, currentModel });
+  res.render('pages/model_details', { allModels, currentModel });
 });
 
 // History & Simulator
 app.get('/predictions', (req: Request, res: Response) => {
   const apps = getPredictions();
-  res.render('history', { apps });
+  res.render('pages/history', { apps });
 });
 
 app.get('/simulator', (req: Request, res: Response) => {
-  res.render('simulator');
+  res.render('pages/simulator');
 });
 
 // Backward compatibility alias for feature importance

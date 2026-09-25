@@ -232,46 +232,89 @@ All `/api/*` routes are proxied through Express.js to the Flask ML backend.
 
 ```
 LoanLens App/
-├── artifacts/
+├── artifacts/                            # ML serialized artifacts
 │   ├── metadata/
-│   │   ├── model_context.json        # Training config & hyperparameters
-│   │   └── selected_model.json       # Production model selection record
+│   │   ├── model_context.json            # Training config & hyperparameters
+│   │   └── selected_model.json           # Production model selection record
 │   ├── metrics/
-│   │   └── all_metrics.json          # Full 4-model evaluation metrics
+│   │   └── all_metrics.json              # Full 4-model evaluation metrics
 │   ├── models/
-│   │   ├── logistic_regression.pkl   # Production model
+│   │   ├── logistic_regression.pkl       # Production model
 │   │   ├── knn.pkl
 │   │   ├── naive_bayes.pkl
 │   │   └── decision_tree.pkl
 │   └── preprocessing/
-│       └── preprocessor.pkl          # Fitted ColumnTransformer pipeline
-├── flask_backend/
-│   └── app.py                        # Flask ML inference API (all /api/* routes)
-├── public/
-│   ├── css/                          # Vanilla CSS stylesheets
-│   ├── js/                           # Client JS: predict, charts, simulator, history
-│   └── artifacts/plots/              # Pre-generated EDA plot images
+│       └── preprocessor.pkl              # Fitted ColumnTransformer pipeline
+│
+├── data/                                 # Dataset & project metadata
+│   ├── Loan_Default.csv                  # Source dataset (255,347 records)
+│   └── metadata.json                     # Project-level metadata
+│
+├── notebooks/                            # Research & training materials
+│   ├── Loan_Default_Prediction.ipynb     # Full ML training & evaluation notebook
+│   └── Loan_Default_Prediction.pdf       # Exported notebook report
+│
+├── flask_backend/                        # Python Flask ML inference engine
+│   ├── app.py                            # All /api/* routes & model loading
+│   └── requirements.txt                  # Python-only dependencies
+│
+├── public/                               # Static frontend assets
+│   ├── css/
+│   │   └── app.css                       # Global stylesheet
+│   ├── js/                               # Client-side JavaScript
+│   │   ├── app.js
+│   │   ├── charts.js
+│   │   ├── predict.js
+│   │   ├── simulator.js
+│   │   └── history.js
+│   └── artifacts/plots/                  # Pre-generated EDA plot images
+│
 ├── scripts/
-│   └── build_artifacts.py            # Re-train & re-serialize all .pkl artifacts
-├── src/
-│   ├── services/
-│   │   ├── predictionService.ts      # Prediction proxy & response shaping
-│   │   ├── modelService.ts           # Model metrics & comparison
-│   │   └── analyticsService.ts       # EDA & insights data
-│   └── types/                        # TypeScript type definitions
-├── views/
-│   ├── components/                   # Reusable EJS partials
-│   └── *.ejs                         # Pages: index, predict, models, simulator, history
-├── Dockerfile                        # Unified Node.js + Flask container
-├── render.yaml                       # Render Docker deployment config
-├── requirements.txt                  # Python dependencies
-├── package.json                      # Node.js dependencies & npm scripts
-├── server.ts                         # Express.js application entry point
-├── tsconfig.json                     # TypeScript compiler config
-├── Loan_Default.csv                  # Source dataset (255,347 records)
-└── Loan_Default_Prediction.ipynb     # Full ML training & evaluation notebook
+│   └── build_artifacts.py                # Re-train & re-serialize .pkl artifacts
+│
+├── src/                                  # Node.js / TypeScript application
+│   ├── lib/                              # Shared internal utilities & data
+│   │   ├── constants.ts                  # Navigation registry & global constants
+│   │   ├── icons.ts                      # Inline SVG icon library
+│   │   ├── metricsData.ts                # Embedded ML evaluation metrics
+│   │   ├── mlService.ts                  # Local fallback inference engine
+│   │   ├── store.ts                      # In-memory prediction history store
+│   │   └── data/
+│   │       └── developmentMockData.ts    # Fallback model & dataset definitions
+│   ├── services/                         # Business logic service layer
+│   │   ├── predictionService.ts          # Prediction proxy & response shaping
+│   │   ├── modelService.ts               # Model metrics & comparison
+│   │   └── analyticsService.ts           # EDA & insights data
+│   └── types/
+│       └── index.ts                      # Shared TypeScript type definitions
+│
+├── views/                                # EJS server-side templates
+│   ├── components/                       # Reusable EJS component partials
+│   │   ├── model_card.ejs
+│   │   └── risk_result_card.ejs
+│   ├── pages/                            # Full page templates
+│   │   ├── dashboard.ejs
+│   │   ├── predict.ejs
+│   │   ├── model_context.ejs
+│   │   ├── model_comparison.ejs
+│   │   ├── model_details.ejs
+│   │   ├── data_insights.ejs
+│   │   ├── history.ejs
+│   │   └── simulator.ejs
+│   ├── partials/                         # Layout fragments (header, footer)
+│   │   ├── header.ejs
+│   │   └── footer.ejs
+│   └── 404.ejs
+│
+├── Dockerfile                            # Unified Node.js + Flask container
+├── render.yaml                           # Render Docker deployment config
+├── .dockerignore
+├── .env.example                          # Environment variable reference
+├── requirements.txt                      # Python dependencies (root-level alias)
+├── package.json                          # Node.js dependencies & npm scripts
+├── server.ts                             # Express.js application entry point
+└── tsconfig.json                         # TypeScript compiler config
 ```
-
 ---
 
 ## 8. Environment Variables

@@ -5,7 +5,7 @@
  */
 
 import { DatasetInsights } from '../types/index.js';
-import { DEV_DATASET_INSIGHTS } from '../data/developmentMockData.js';
+import { DEV_DATASET_INSIGHTS } from '../lib/data/developmentMockData.js';
 
 export class AnalyticsService {
   private get useRemoteApi(): boolean {
